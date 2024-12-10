@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>pic/icon.svg</file>
         <file>pic/blackPiece.svg</file>
-        <file>pic/Main.webp</file>
         <file>pic/whitePiece.svg</file>
+        <file>pic/Main.png</file>
     </qresource>
 </RCC>
