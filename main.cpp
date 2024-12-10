@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
+#include <QIcon>
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,11 @@ int main(int argc, char *argv[])
         }
     }
     MainWindow w;
+    w.setWindowTitle("五子棋 - by 黄志强 - 2024/12/10");
+
+    QIcon icon(":/pic/icon.svg");
+    w.setWindowIcon(icon);
+
     w.show();
     return a.exec();
 }

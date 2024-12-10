@@ -20,6 +20,7 @@ set(PROJECT_SOURCES
         mainwindow.h
         mainwindow.ui
         ${TS_FILES}
+        resources.qrc # 添加资源文件
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
