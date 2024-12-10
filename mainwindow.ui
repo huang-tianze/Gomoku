@@ -13,21 +13,7 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>170</y>
-      <width>40</width>
-      <height>12</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Hiiiii</string>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -37,8 +23,86 @@
      <height>17</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>棋谱</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionImport"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionFolder"/>
+    <addaction name="actionRecent"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>关于</string>
+    </property>
+    <addaction name="actionVersion"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>偏好</string>
+    </property>
+    <addaction name="actionAutoSave"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
+   <property name="text">
+    <string>打开棋谱</string>
+   </property>
+  </action>
+  <action name="actionFolder">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
+   </property>
+   <property name="text">
+    <string>打开棋谱文件夹</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
+   </property>
+   <property name="text">
+    <string>导出棋谱</string>
+   </property>
+  </action>
+  <action name="actionRecent">
+   <property name="text">
+    <string>最近打开的棋谱</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+   </property>
+   <property name="text">
+    <string>导入棋谱</string>
+   </property>
+  </action>
+  <action name="actionAutoSave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>自动保存棋谱</string>
+   </property>
+  </action>
+  <action name="actionVersion">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DialogInformation"/>
+   </property>
+   <property name="text">
+    <string>版本</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
