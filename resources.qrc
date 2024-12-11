@@ -4,5 +4,6 @@
         <file>pic/blackPiece.svg</file>
         <file>pic/whitePiece.svg</file>
         <file>pic/Main.png</file>
+        <file>pic/chessBoard.png</file>
     </qresource>
 </RCC>
