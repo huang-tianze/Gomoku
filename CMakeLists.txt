@@ -27,6 +27,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Gomoku
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        chessboard.h chessboard.cpp chessboard.ui
+
 
 
 

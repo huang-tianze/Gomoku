@@ -12,8 +12,26 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::chessBoardDraw() { // deprecated..
-    this->centralWidget()->setStyleSheet("background-image: url(:/pic/chessBoard.png);");
+// void MainWindow::chessBoardDraw() { // deprecated..
+//     this->centralWidget()->setStyleSheet("background-image: url(:/pic/chessBoard.png);");
+// }
+bool MainWindow::isAutoSaveOn() {
+    if (this->ui->actionAutoSave->isChecked())
+        return true;
+    else
+        return false;
+}
+bool MainWindow::isKeyboardOn() {
+    if (this->ui->actionKeyboardOn->isChecked())
+        return true;
+    else
+        return false;
+}
+bool MainWindow::isMouseOn() {
+    if (this->ui->actionMouseOn->isChecked())
+        return true;
+    else
+        return false;
 }
 void MainWindow::hideButton() {
     this->ui->pvpButton->hide();
@@ -22,16 +40,14 @@ void MainWindow::hideButton() {
 }
 void MainWindow::dropPiece() {}
 void MainWindow::on_pvpButton_clicked() {
-    chessBoardDraw();
-    hideButton();
-    // ChessBoard *chessBoard = new ChessBoard; // 如果继承this，会在主页面显示，而QWdiget事实上应该是另一个窗口，与MainWindow同级
-    // QPainter painter(chessBoard);
-    // QPixmap chessBoardImg;
-    // chessBoardImg.load(":/pic/chessBoard.png");
-    // painter.drawPixmap(0, 0, 111, 111, chessBoardImg);
-    // chessBoard->show();
-    // this->hide();
+    chessBoard = new ChessBoard(this);     // 由于某种未知原因，需要在chessBoard的UI内加入一个Widget来显示内容，主窗口不显示内容, this继承父关系
+    chessBoard->setWindowFlag(Qt::Window); // 将chessBoard的窗口设置在新的窗口，防止其直接在MainWindow内部显示（但保留与mainwindow的父子关系）
+    chessBoard->show();
+    this->hide();
 }
 void MainWindow::on_exitButton_clicked() {
     close();
+}
+
+void MainWindow::on_continueButton_clicked() {
 }

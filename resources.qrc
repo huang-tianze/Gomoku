@@ -1,9 +1,12 @@
 <RCC>
     <qresource prefix="/">
         <file>pic/icon.svg</file>
-        <file>pic/blackPiece.svg</file>
-        <file>pic/whitePiece.svg</file>
         <file>pic/Main.png</file>
         <file>pic/chessBoard.png</file>
+        <file>pic/buttonBackground.png</file>
+        <file>pic/whitePiecePredrop.png</file>
+        <file>pic/blackPiecePredrop.png</file>
+        <file>pic/blackPiece.png</file>
+        <file>pic/whitePiece.png</file>
     </qresource>
 </RCC>

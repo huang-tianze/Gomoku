@@ -61,7 +61,7 @@ color:rgb(0,0,0);</string>
     </property>
     <property name="styleSheet">
      <string notr="true">font-size:20px;
-background-image: url(:/pic/Main.png);
+background-image: url(:/pic/buttonBackground.png);
 color:rgb(0,0,0);</string>
     </property>
     <property name="text">
@@ -79,7 +79,7 @@ color:rgb(0,0,0);</string>
     </property>
     <property name="styleSheet">
      <string notr="true">font-size:20px;
-background-image: url(:/pic/Main.png);
+background-image: url(:/pic/buttonBackground.png);
 color:rgb(0,0,0);</string>
     </property>
     <property name="text">
@@ -97,11 +97,29 @@ color:rgb(0,0,0);</string>
     </property>
     <property name="styleSheet">
      <string notr="true">font-size:20px;
-background-image: url(:/pic/Main.png);
+background-image: url(:/pic/buttonBackground.png);
 color:rgb(0,0,0);</string>
     </property>
     <property name="text">
      <string>退出</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="continueButton">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>570</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-size:20px;
+background-image: url(:/pic/buttonBackground.png);
+color:rgb(0,0,0);</string>
+    </property>
+    <property name="text">
+     <string>继续</string>
     </property>
    </widget>
   </widget>
@@ -117,24 +135,30 @@ color:rgb(0,0,0);</string>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(0, 0, 0);</string>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="doMenu">
     <property name="title">
      <string>棋谱</string>
     </property>
+    <widget class="QMenu" name="menu">
+     <property name="title">
+      <string>最近打开的棋谱</string>
+     </property>
+     <addaction name="actionrecent1"/>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionImport"/>
     <addaction name="actionExport"/>
     <addaction name="actionFolder"/>
-    <addaction name="actionRecent"/>
+    <addaction name="menu"/>
     <addaction name="actionsetFolder"/>
    </widget>
-   <widget class="QMenu" name="menu_2">
+   <widget class="QMenu" name="infoMenu">
     <property name="title">
      <string>关于</string>
     </property>
     <addaction name="actionVersion"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
+   <widget class="QMenu" name="checkMenu">
     <property name="title">
      <string>设置</string>
     </property>
@@ -142,9 +166,9 @@ color:rgb(0,0,0);</string>
     <addaction name="actionMouseOn"/>
     <addaction name="actionKeyboardOn"/>
    </widget>
-   <addaction name="menu"/>
-   <addaction name="menu_3"/>
-   <addaction name="menu_2"/>
+   <addaction name="doMenu"/>
+   <addaction name="checkMenu"/>
+   <addaction name="infoMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
@@ -169,11 +193,6 @@ color:rgb(0,0,0);</string>
    </property>
    <property name="text">
     <string>导出棋谱</string>
-   </property>
-  </action>
-  <action name="actionRecent">
-   <property name="text">
-    <string>最近打开的棋谱</string>
    </property>
   </action>
   <action name="actionImport">
@@ -237,6 +256,11 @@ color:rgb(0,0,0);</string>
    </property>
    <property name="text">
     <string>更改棋谱文件夹</string>
+   </property>
+  </action>
+  <action name="actionrecent1">
+   <property name="text">
+    <string>recent1</string>
    </property>
   </action>
  </widget>
