@@ -5,7 +5,7 @@ int onChess = 0;
 MainWindow::MainWindow(QWidget *parent) // 供main调用的窗口构造函数
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    ui->statusbar->showMessage("Ciallo～(∠・ω< )⌒☆", 5000);
+    ui->statusbar->showMessage("Ciallo～(∠・ω< )⌒☆");
 }
 
 MainWindow::~MainWindow() {
@@ -38,10 +38,11 @@ void MainWindow::hideButton() {
     this->ui->pveButton->hide();
     this->ui->manualButton->hide();
 }
-void MainWindow::dropPiece() {}
+
 void MainWindow::on_pvpButton_clicked() {
     chessBoard = new ChessBoard(this);     // 由于某种未知原因，需要在chessBoard的UI内加入一个Widget来显示内容，主窗口不显示内容, this继承父关系
     chessBoard->setWindowFlag(Qt::Window); // 将chessBoard的窗口设置在新的窗口，防止其直接在MainWindow内部显示（但保留与mainwindow的父子关系）
+    chessBoard->setWindowTitle("标题信息待定");
     chessBoard->show();
     this->hide();
 }
