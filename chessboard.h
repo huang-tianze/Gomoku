@@ -23,7 +23,9 @@ private slots:
 
 private:
     Ui::ChessBoard *ui;
+    void caretMove();
     void save();
+    void load();
     void closeEvent(QCloseEvent *event) override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
 };
 

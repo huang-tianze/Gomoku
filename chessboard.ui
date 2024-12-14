@@ -86,7 +86,7 @@ color:rgb(0,0,0);</string>
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>125</x>
+      <x>213</x>
       <y>510</y>
       <width>27</width>
       <height>27</height>
@@ -107,6 +107,20 @@ border:none;</string>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="statusBarVerticalLayout"/>
+   </widget>
+   <widget class="QGraphicsView" name="caret">
+    <property name="geometry">
+     <rect>
+      <x>157</x>
+      <y>497</y>
+      <width>53</width>
+      <height>53</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/pic/caret.png);
+border:none;</string>
+    </property>
    </widget>
   </widget>
  </widget>

@@ -19,7 +19,11 @@ void ChessBoard::closeEvent(QCloseEvent *event) {
     this->parentWidget()->show();
     QWidget::closeEvent(event);
 }
+void ChessBoard::caretMove() {}
+// 光标符合的位置是114 454和157 497，移动距离为43 43
+// 棋子的符合位置有213 510
 void ChessBoard::save() {}
+void ChessBoard::load() {}
 
 void ChessBoard::on_homeButton_clicked() {
     MainWindow *mainWindow = qobject_cast<MainWindow *>(parentWidget());
