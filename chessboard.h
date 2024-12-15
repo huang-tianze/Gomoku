@@ -5,10 +5,18 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QSize>
 #include <QStatusBar>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
+
+#include <vector>
+
+struct pieceDrop {
+    int col, row; // 存的是从0开始的col和row
+    bool isBlack;
+};
 
 namespace Ui {
     class ChessBoard;
@@ -21,7 +29,7 @@ public:
     explicit ChessBoard(QWidget *parent = nullptr);
     ~ChessBoard();
     static int pieces[16][16]; // 存储棋盘状态
-    // static pair 存储过程.
+    std::vector<pieceDrop> pieceDrops;
 
 private slots:
     void on_homeButton_clicked();
@@ -30,14 +38,21 @@ private:
     Ui::ChessBoard *ui;
     QStatusBar *chessStatusBar;
     int cursorX = -1, cursorY = -1;
+    int col, row; // 从0开始的
+    char colDisplay;
+    int rowDisplay;
+    int chessX, chessY;
     bool isBlackOnChess = true;
+    QPixmap piecesImg; // 存储棋子图片，构造函数里初始化
 
+    QPixmap imgMerge(QPixmap, QPixmap, int, int);
     void dropPiece();
     void save();
     void load();
     void closeEvent(QCloseEvent *event) override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 };
 
 #endif // CHESSBOARD_H

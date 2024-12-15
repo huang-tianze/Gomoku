@@ -118,6 +118,16 @@ color:rgb(0,0,0);</string>
     <string>保存对局</string>
    </property>
   </widget>
+  <widget class="QTextBrowser" name="chessRecord">
+   <property name="geometry">
+    <rect>
+     <x>730</x>
+     <y>80</y>
+     <width>256</width>
+     <height>371</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

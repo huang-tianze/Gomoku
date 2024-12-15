@@ -8,5 +8,6 @@
         <file>pic/blackPiecePredrop.png</file>
         <file>pic/blackPiece.png</file>
         <file>pic/whitePiece.png</file>
+        <file>pic/transparent.png</file>
     </qresource>
 </RCC>
