@@ -15,6 +15,7 @@ ChessBoard::ChessBoard(QWidget *parent)
     // 背景 QWidget默认禁用了styledBackground，使用QSS绘制需要启用
     setAttribute(Qt::WA_StyledBackground, true);
     piecesImg.load(":/pic/transparent.png");
+    lastPiecesImg.load(":/pic/transparent.png");
 
     // 光标
     this->setMouseTracking(true);
@@ -37,6 +38,7 @@ void ChessBoard::closeEvent(QCloseEvent *event) {
     QWidget::closeEvent(event);
 }
 void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
+    if (isEnded) return;
     QPoint pos = event->pos();
     cursorX = pos.x();
     cursorY = pos.y();
@@ -58,22 +60,17 @@ void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
     update(); // 让Qt更新部件，会在事件队列里加入一个QPaintEvent
 }
 // 棋子合格位置 :600 596, 移动距离43
+// 光标符合的位置是114 454和157 497，移动距离为43 43(废弃，不用光标)
+// 棋子的符合位置有213 510，移动距离 43 43
 void ChessBoard::paintEvent(QPaintEvent *event) {
+    if (isEnded) return;
+
     // predrop的棋子显示
     QPainter painter(this);
     painter.drawPixmap(0, 0, 1034, 738, piecesImg);
     if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37) return;
 
     painter.setRenderHint(QPainter::Antialiasing);
-    // int row = (cursorY - 37) / 43;
-    // int col = (cursorX - 41) / 43;
-    // int prePieceY, prePieceX;
-    // if (row + 1 == 15) prePieceY = 637;
-    // if (col + 1 == 15) prePieceX = 641;
-    // if (row != 15 && col != 15) {
-    //     prePieceY = row * 43 + 37;
-    //     prePieceX = col * 43 + 41;
-    // }
     if (pieces[row + 1][col + 1] != 0) return;
     QPixmap prePiecePixmap;
     if (isBlackOnChess)
@@ -83,21 +80,21 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
     painter.drawPixmap(chessX, chessY, 27, 27, prePiecePixmap);
 }
 void ChessBoard::mousePressEvent(QMouseEvent *event) {
+    if (isEnded) return;
     if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37) return;
-    // int row = (cursorY - 37) / 43;
-    // int col = (cursorX - 41) / 43;
-    // int pieceY, pieceX;
-    // if (row + 1 == 15) pieceY = 637;
-    // if (col + 1 == 15) pieceX = 641;
-    // if (row != 15 && col != 15) {
-    //     pieceY = row * 43 + 37;
-    //     pieceX = col * 43 + 41;
-    // }
     if (pieces[row + 1][col + 1] != 0) return;
+    // 悔棋相关数据存储
+    lastDropCol = col;
+    lastDropRow = row;
+    lastDropRowDisplay = rowDisplay;
+    lastDropColDisplay = colDisplay;
+    isCurBack = false;
+    // 对局过程数据存储
     QPixmap piecePixmap;
     pieceDrop thisPieceDrop;
     thisPieceDrop.row = row;
     thisPieceDrop.col = col;
+    // 落子..
     if (isBlackOnChess) {
         piecePixmap.load(":/pic/blackPiece.png");
         pieces[row + 1][col + 1] = 1;
@@ -113,21 +110,52 @@ void ChessBoard::mousePressEvent(QMouseEvent *event) {
     pieces[0][col + 1] += 1;
     pieces[0][0] += 1;
     pieceDrops.push_back(thisPieceDrop);
-
+    lastPiecesImg = piecesImg;
     piecesImg = imgMerge(piecesImg, piecePixmap, chessX, chessY);
     update();
+    winnerJudge();
     isBlackOnChess = !isBlackOnChess;
+    round++;
 }
 QPixmap ChessBoard::imgMerge(QPixmap basePiecesImg, QPixmap newPieceImg, int x, int y) {
     QPainter painter(&basePiecesImg);
     painter.drawPixmap(x, y, 27, 27, newPieceImg);
     return basePiecesImg;
 }
-// 光标符合的位置是114 454和157 497，移动距离为43 43(废弃，不用光标)
-// 棋子的符合位置有213 510，移动距离 43 43
+void ChessBoard::winnerJudge() {
+    int targetNum;
+    int curRow = row + 1, curCol = col + 1; // 从1开始的行列
+    if (isBlackOnChess)
+        targetNum = 1;
+    else
+        targetNum = -1;
+    int verticalCount = 0;
+    int horizontalCount = 0;
+    int mainDiagonalCount = 0;
+    int counterDiagonalCount = 0;
+    for (int i = curCol - 1; pieces[curRow][i] == targetNum && i >= 1; i--) horizontalCount++;
+    for (int i = curCol + 1; pieces[curRow][i] == targetNum && i <= 15; i++) horizontalCount++;
+    for (int i = curRow - 1; pieces[i][curCol] == targetNum && i >= 1; i--) verticalCount++;
+    for (int i = curRow + 1; pieces[i][curCol] == targetNum && i <= 15; i++) verticalCount++;
+    for (int i = 1; pieces[curRow - i][curCol - i] == targetNum && i <= 4 && curRow - i >= 1 && curCol - i >= 1; i++) mainDiagonalCount++;
+    for (int i = 1; pieces[curRow + i][curCol + i] == targetNum && i <= 4 && curRow + i <= 15 && curCol + i <= 15; i++) mainDiagonalCount++;
+    for (int i = 1; pieces[curRow + i][curCol - i] == targetNum && i <= 4 && curRow + i <= 15 && curCol - i >= 1; i++) counterDiagonalCount++;
+    for (int i = 1; pieces[curRow - i][curCol + i] == targetNum && i <= 4 && curRow - i >= 1 && curCol + i <= 15; i++) counterDiagonalCount++;
+    if (verticalCount == 4 || horizontalCount == 4 || mainDiagonalCount == 4 || counterDiagonalCount == 4) {
+        if (isBlackOnChess) {
+            QMessageBox::information(this, "对局结束！", "黑方胜利！");
+            ui->chessRecord->append("黑方胜利！");
+        } else {
+            QMessageBox::information(this, "对局结束！", "白方胜利！");
+            ui->chessRecord->append("白方胜利！");
+        }
+        isEnded = true; // 如果前面加上声明，bool isEnded = true; 那么这个变量就是新的变量，而不是类中的成员变量.
+        save();
+    }
+}
+
 void ChessBoard::save() {}
 void ChessBoard::load() {}
-void ChessBoard::dropPiece() {}
 
 void ChessBoard::on_homeButton_clicked() {
     MainWindow *mainWindow = qobject_cast<MainWindow *>(parentWidget());
@@ -144,4 +172,25 @@ void ChessBoard::on_homeButton_clicked() {
 
     this->close();
     this->parentWidget()->show();
+}
+
+void ChessBoard::on_backButton_clicked() {
+    // 由于不想增加QPixmap的存储了，只做一步悔棋.
+    if (isCurBack) {
+        QMessageBox::information(this, "悔棋", "不能连续悔棋！");
+        return;
+    }
+    if (isEnded) isEnded = !isEnded;
+    isBlackOnChess = !isBlackOnChess;
+    isCurBack = true;
+    round--;
+    pieces[lastDropRow + 1][lastDropCol + 1] = 0;
+    pieceDrops.pop_back();
+    if (isBlackOnChess) {
+        ui->chessRecord->append(QString("悔棋：黑方撤回了在%1%2的一步").arg(lastDropColDisplay).arg(lastDropRowDisplay));
+    } else {
+        ui->chessRecord->append(QString("悔棋：白方撤回了在%1%2的一步").arg(lastDropColDisplay).arg(lastDropRowDisplay));
+    }
+    piecesImg = lastPiecesImg;
+    update();
 }
