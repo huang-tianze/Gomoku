@@ -107,7 +107,7 @@ background-image: url(:/pic/buttonBackground.png);
 color:rgb(0,0,0);</string>
     </property>
     <property name="text">
-     <string>我的棋谱</string>
+     <string>打开棋谱</string>
     </property>
    </widget>
    <widget class="QPushButton" name="exitButton">
@@ -126,24 +126,6 @@ color:rgb(0,0,0);</string>
     </property>
     <property name="text">
      <string>退出</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="continueButton">
-    <property name="geometry">
-     <rect>
-      <x>790</x>
-      <y>570</y>
-      <width>141</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font-size:20px;
-background-image: url(:/pic/buttonBackground.png);
-color:rgb(0,0,0);</string>
-    </property>
-    <property name="text">
-     <string>继续</string>
     </property>
    </widget>
   </widget>
