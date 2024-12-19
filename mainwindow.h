@@ -29,7 +29,10 @@ private slots:
     void on_pvpButton_clicked();
     void on_exitButton_clicked();
     void on_manualButton_clicked();
+    void on_pveButton_clicked();
     void reshow();
+
+    void on_actionOpen_triggered();
 
 private:
     Ui::MainWindow *ui;

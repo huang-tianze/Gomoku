@@ -20,18 +20,6 @@ bool MainWindow::isAutoSaveOn() {
     else
         return false;
 }
-bool MainWindow::isKeyboardOn() {
-    if (this->ui->actionKeyboardOn->isChecked())
-        return true;
-    else
-        return false;
-}
-bool MainWindow::isMouseOn() {
-    if (this->ui->actionMouseOn->isChecked())
-        return true;
-    else
-        return false;
-}
 void MainWindow::hideButton() {
     this->ui->pvpButton->hide();
     this->ui->pveButton->hide();
@@ -43,13 +31,11 @@ void MainWindow::on_pvpButton_clicked() {
     // 由于某种未知原因，需要在chessBoard的UI内加入一个Widget来显示内容，主窗口不显示内容, this继承父关系(由于通过信号与槽重构了显示方法，不需要继承关系了，也不需要setWindowFlag了)
     // 连接子窗口的信号
     connect(chessBoard, &ChessBoard::reshowRequested, this, &MainWindow::reshow);
-    chessBoard->isKeyboardOn = isKeyboardOn();
     chessBoard->isAutoSaveOn = isAutoSaveOn();
-    chessBoard->isMouseOn = isMouseOn();
     // chessBoard->setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint);
     // 将chessBoard的窗口设置在新的窗口，防止其直接在MainWindow内部显示（但保留与mainwindow的父子关系）
     // 由于QWidget难以增加任务栏图标，也不方便做了大半再转成QMainwindow，故设置为常在最前窗口
-    chessBoard->setWindowTitle("标题信息待定");
+    chessBoard->setWindowTitle("双人对局");
     chessBoard->show();
     this->hide();
 }
@@ -58,6 +44,7 @@ void MainWindow::on_exitButton_clicked() {
 }
 void MainWindow::on_manualButton_clicked() {
     QString fileName = QFileDialog::getOpenFileName(this, "选择文件", "", "棋谱二进制文件 (*.dat)");
+    // qDebug() << fileName;
     if (fileName.isEmpty()) {
         QMessageBox::information(this, "提示", "未选择任何文件！");
         return;
@@ -75,13 +62,37 @@ void MainWindow::on_manualButton_clicked() {
     while (inFile) {
         pieceDrop drop;
         inFile.read(reinterpret_cast<char *>(&drop), sizeof(pieceDrop));
+        if (inFile.eof()) break; // 不加eof判断的话，不知道为什么最后一条数据会重复一次
         chessManual->pieceDrops.push_back(drop);
     }
     inFile.close();
-    qDebug() << chessManual->pieceDrops.size();
+    // qDebug() << chessManual->pieceDrops.size();
     chessManual->show();
     this->hide();
 }
 void MainWindow::reshow() {
     this->show();
+}
+void MainWindow::on_actionOpen_triggered() {
+    on_manualButton_clicked();
+}
+void MainWindow::on_pveButton_clicked() {
+    chessBoard = new ChessBoard;
+    connect(chessBoard, &ChessBoard::reshowRequested, this, &MainWindow::reshow);
+    chessBoard->isAutoSaveOn = isAutoSaveOn();
+    chessBoard->isPVE = true;
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("选择棋子颜色");
+    msgBox.setText("你希望选择黑棋还是白棋？（黑棋先手）");
+    QPushButton *yes = msgBox.addButton("黑棋", QMessageBox::YesRole);
+    QPushButton *no = msgBox.addButton("白棋", QMessageBox::NoRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == yes) {
+        chessBoard->isPlayerFist = true;
+    } else {
+        chessBoard->isPlayerFist = false;
+    }
+    chessBoard->setWindowTitle("人机对战");
+    chessBoard->show();
+    this->hide();
 }

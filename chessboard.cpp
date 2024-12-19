@@ -44,39 +44,27 @@ void ChessBoard::closeEvent(QCloseEvent *event) {
 
 void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
     if (isEnded) return;
-    QPoint pos = event->pos();
-    cursorX = pos.x();
-    cursorY = pos.y();
-    if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37) {
+    calMousePos(event);
+    if (!inBoard) {
         chessStatusBar->showMessage("Ciallo～(∠・ω< )⌒☆");
     } else {
-        row = (cursorY - 37) / 43;
-        rowDisplay = 15 - row;
-        col = (cursorX - 41) / 43;
-        colDisplay = col + 'A';
         chessStatusBar->showMessage(QString("%1%2").arg(colDisplay).arg(rowDisplay));
-        if (row + 1 == 15) chessY = 637;
-        if (col + 1 == 15) chessX = 641;
-        if (row != 15 && col != 15) {
-            chessY = row * 43 + 37;
-            chessX = col * 43 + 41;
-        }
     }
     update(); // 让Qt更新部件，会在事件队列里加入一个QPaintEvent
 }
+
 // 棋子合格位置 :600 596, 移动距离43
 // 光标符合的位置是114 454和157 497，移动距离为43 43(废弃，不用光标)
 // 棋子的符合位置有213 510，移动距离 43 43
 void ChessBoard::paintEvent(QPaintEvent *event) {
     if (isEnded) return;
-
     // predrop的棋子显示
     QPainter painter(this);
-    painter.drawPixmap(0, 0, 1034, 738, piecesImg);
-    if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37) return;
-
-    painter.setRenderHint(QPainter::Antialiasing);
+    painter.drawPixmap(0, 0, 1034, 738, piecesImg); // 已有棋子绘制
+    if (!inBoard) return;
     if (pieces[row + 1][col + 1] != 0) return;
+    painter.setRenderHint(QPainter::Antialiasing);
+
     QPixmap prePiecePixmap;
     if (isBlackOnChess)
         prePiecePixmap.load(":/pic/blackPiecePredrop.png");
@@ -87,8 +75,9 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
 
 void ChessBoard::mousePressEvent(QMouseEvent *event) {
     if (isEnded) return;
-    if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37) return;
+    if (!inBoard) return;
     if (pieces[row + 1][col + 1] != 0) return;
+    calMousePos(event);
     // 悔棋相关数据存储
     lastDropCol = col;
     lastDropRow = row;
@@ -115,14 +104,39 @@ void ChessBoard::mousePressEvent(QMouseEvent *event) {
     pieces[row + 1][0] += 1;
     pieces[0][col + 1] += 1;
     pieces[0][0] += 1;
-    thisPieceDrop.isEnd = winnerJudge();
-    pieceDrops.push_back(thisPieceDrop);
     lastPiecesImg = piecesImg;
     piecesImg = imgMerge(piecesImg, piecePixmap, chessX, chessY);
     update();
+    thisPieceDrop.isEnd = winnerJudge();
+    pieceDrops.push_back(thisPieceDrop);
+    if (isEnded) save();
     isBlackOnChess = !isBlackOnChess;
     round++;
 }
+
+void ChessBoard::calMousePos(QMouseEvent *event) {
+    QPoint pos = event->pos();
+    cursorX = pos.x();
+    cursorY = pos.y();
+    if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37)
+        inBoard = false;
+    else
+        inBoard = true;
+    row = (cursorY - 37) / 43;
+    rowDisplay = 15 - row;
+    col = (cursorX - 41) / 43;
+    colDisplay = col + 'A';
+    if (row + 1 == 15) chessY = 637;
+    if (col + 1 == 15) chessX = 641;
+    if (row != 15 && col != 15) {
+        chessY = row * 43 + 37;
+        chessX = col * 43 + 41;
+    }
+}
+
+void ChessBoard::drop(int row, int col) { // 从1开始的row和col
+}
+
 QPixmap imgMerge(QPixmap basePiecesImg, QPixmap newPieceImg, int x, int y) {
     QPainter painter(&basePiecesImg);
     painter.drawPixmap(x, y, 27, 27, newPieceImg);
@@ -161,7 +175,6 @@ bool ChessBoard::winnerJudge() {
             ui->chessRecord->append("白方胜利！");
         }
         isEnded = true; // 如果前面加上声明，bool isEnded = true; 那么这个变量就是新的变量，而不是类中的成员变量.
-        if (isAutoSaveOn) save();
         return true;
     }
     return false;
@@ -169,9 +182,9 @@ bool ChessBoard::winnerJudge() {
 
 void ChessBoard::save() {
     if (isSaved) return;
-    if (pieceDrops.size() < 5) return;
+    if (pieceDrops.size() < 3) return;
     long long nowTime = time(NULL);
-    QString fileName = QString::number(nowTime) + ".dat";
+    QString fileName = "D:/Files/SDU/2024ProgramDesign/Project/2-Assignment/Gomoku/chessManual/" + QString::number(nowTime) + ".dat";
     std::ofstream outFile(fileName.toStdString(), std::ios::binary);
     if (!outFile) {
         qDebug() << "无法打开文件进行写入！"; // TODO: 改成QMessageBox

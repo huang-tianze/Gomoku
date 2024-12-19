@@ -12,7 +12,6 @@ ChessManual::ChessManual(QWidget *parent)
     chessStatusBar->showMessage("Ciallo～(∠・ω< )⌒☆");
     setAttribute(Qt::WA_StyledBackground, true);
     piecesImg.load(":/pic/transparent.png");
-    lastPiecesImg.load(":/pic/transparent.png");
     this->setMouseTracking(true);
     QTimer::singleShot(10, this, [this]() {
         this->setCursor(Qt::ArrowCursor);
@@ -33,16 +32,6 @@ void ChessManual::on_homeButton_clicked() {
     emit reshowRequested();
 }
 void ChessManual::on_nextButton_clicked() {
-    qDebug() << pieceDrops.size();
-    if (pieceDrops[round].isEnd) {
-        isEnded = true;
-        ui->nextButton->setEnabled(false);
-        if (pieceDrops[round].isBlack) {
-            ui->chessRecord->append("黑方胜利！");
-        } else {
-            ui->chessRecord->append("白方胜利！");
-        }
-    }
     int row = pieceDrops[round].row;
     int col = pieceDrops[round].col;
     bool isBlackNow = pieceDrops[round].isBlack;
@@ -65,18 +54,29 @@ void ChessManual::on_nextButton_clicked() {
         pieceImg.load(":/pic/whitePiece.png");
     }
     ui->chessRecord->append(QString("第%1手，%2方落在了%3%4").arg(round + 1).arg(player).arg(colDisplay).arg(rowDisplay));
-
-    imgMerge(piecesImg, pieceImg, chessX, chessY);
+    piecesImg = imgMerge(piecesImg, pieceImg, chessX, chessY);
     update();
 
-    round++;
+    if (pieceDrops[round].isEnd) {
+        isEnded = true;
+        ui->nextButton->setEnabled(false);
+        if (pieceDrops[round].isBlack) {
+            ui->chessRecord->append("黑方胜利！");
+            QMessageBox::information(this, "对局结束！", "黑方胜利！");
+        } else {
+            ui->chessRecord->append("白方胜利！");
+            QMessageBox::information(this, "对局结束！", "白方胜利！");
+        }
+    }
     if (round >= pieceDrops.size()) {
         isEnded = true;
         ui->nextButton->setEnabled(false);
     }
+    round++;
+    // qDebug() << chessX << ',' << chessY << '\n';
 }
 void ChessManual::paintEvent(QPaintEvent *event) {
-    if (isEnded) return;
+    // if (isEnded) return; 这段不需要，会导致正常需要绘画的piecesImg跳过绘制
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.drawPixmap(0, 0, 1034, 738, piecesImg);

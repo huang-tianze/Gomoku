@@ -33,10 +33,11 @@ public:
     ~ChessBoard();
     int pieces[16][16]; // 存储棋盘状态
     std::vector<pieceDrop> pieceDrops;
-    int round = 1;
 
-    bool isKeyboardOn;
-    bool isMouseOn;
+    bool isPVE = false;
+    bool isPlayerFist = true;
+    int difficulty = 0;
+
     bool isAutoSaveOn;
 
 signals:
@@ -55,6 +56,8 @@ private:
     char colDisplay;
     int rowDisplay;
     int chessX, chessY;
+    bool inBoard;
+    int round = 1;
 
     int lastDropRow, lastDropCol; // 从0开始
     int lastDropRowDisplay;
@@ -63,16 +66,15 @@ private:
     bool isBlackOnChess = true;
     bool isEnded = false;
     bool isCurBack = false;
-    bool isPVE = false;
-    bool isPlayerFist = true;
     bool isSaved = false;
-    int difficulty = 0;
-    bool isChessManual = false;
+
     QPixmap piecesImg; // 存储棋子图片，构造函数里初始化
     QPixmap lastPiecesImg;
 
     bool winnerJudge();
     void save();
+    void drop(int, int);
+    void calMousePos(QMouseEvent *);
 
     void closeEvent(QCloseEvent *event) override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
     void mouseMoveEvent(QMouseEvent *event) override;
