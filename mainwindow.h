@@ -19,8 +19,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     bool isAutoSaveOn();
-    bool isKeyboardOn();
-    bool isMouseOn();
 
 private slots:
     // void chessBoardDraw();

@@ -22,7 +22,7 @@ private slots:
 public:
     explicit ChessManual(QWidget *parent = nullptr);
     ~ChessManual();
-    int round = 0; // 为了方便遍历vector，从0开始
+    int round = 1;
     std::vector<pieceDrop> pieceDrops;
     int totalRound; //  = pieceDrops.size(); 不能在类里赋值，因为数据是后塞入的，需要在赋值后再初始化
 signals:

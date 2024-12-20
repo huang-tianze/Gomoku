@@ -45,11 +45,10 @@ void ChessBoard::closeEvent(QCloseEvent *event) {
 void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
     if (isEnded) return;
     calMousePos(event);
-    if (!inBoard) {
+    if (!inBoard)
         chessStatusBar->showMessage("Ciallo～(∠・ω< )⌒☆");
-    } else {
+    else
         chessStatusBar->showMessage(QString("%1%2").arg(colDisplay).arg(rowDisplay));
-    }
     update(); // 让Qt更新部件，会在事件队列里加入一个QPaintEvent
 }
 
@@ -57,12 +56,11 @@ void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
 // 光标符合的位置是114 454和157 497，移动距离为43 43(废弃，不用光标)
 // 棋子的符合位置有213 510，移动距离 43 43
 void ChessBoard::paintEvent(QPaintEvent *event) {
-    if (isEnded) return;
     // predrop的棋子显示
     QPainter painter(this);
     painter.drawPixmap(0, 0, 1034, 738, piecesImg); // 已有棋子绘制
     if (!inBoard) return;
-    if (pieces[row + 1][col + 1] != 0) return;
+    if (pieces[row][col] != 0) return;
     painter.setRenderHint(QPainter::Antialiasing);
 
     QPixmap prePiecePixmap;
@@ -72,11 +70,10 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
         prePiecePixmap.load(":/pic/whitePiecePredrop.png");
     painter.drawPixmap(chessX, chessY, 27, 27, prePiecePixmap);
 }
-
 void ChessBoard::mousePressEvent(QMouseEvent *event) {
     if (isEnded) return;
     if (!inBoard) return;
-    if (pieces[row + 1][col + 1] != 0) return;
+    if (pieces[row][col] != 0) return;
     calMousePos(event);
     // 悔棋相关数据存储
     lastDropCol = col;
@@ -92,17 +89,17 @@ void ChessBoard::mousePressEvent(QMouseEvent *event) {
     // 落子..
     if (isBlackOnChess) {
         piecePixmap.load(":/pic/blackPiece.png");
-        pieces[row + 1][col + 1] = 1;
+        pieces[row][col] = 1;
         thisPieceDrop.isBlack = true;
         ui->chessRecord->append(QString("第%1手，黑方落子：%2%3").arg(round).arg(colDisplay).arg(rowDisplay));
     } else {
         piecePixmap.load(":/pic/whitePiece.png");
-        pieces[row + 1][col + 1] = -1;
+        pieces[row][col] = -1;
         thisPieceDrop.isBlack = false;
         ui->chessRecord->append(QString("第%1手，白方落子：%2%3").arg(round).arg(colDisplay).arg(rowDisplay));
     }
-    pieces[row + 1][0] += 1;
-    pieces[0][col + 1] += 1;
+    pieces[row][0] += 1;
+    pieces[0][col] += 1;
     pieces[0][0] += 1;
     lastPiecesImg = piecesImg;
     piecesImg = imgMerge(piecesImg, piecePixmap, chessX, chessY);
@@ -118,23 +115,35 @@ void ChessBoard::calMousePos(QMouseEvent *event) {
     QPoint pos = event->pos();
     cursorX = pos.x();
     cursorY = pos.y();
+
     if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37)
         inBoard = false;
     else
         inBoard = true;
-    row = (cursorY - 37) / 43;
-    rowDisplay = 15 - row;
-    col = (cursorX - 41) / 43;
-    colDisplay = col + 'A';
-    if (row + 1 == 15) chessY = 637;
-    if (col + 1 == 15) chessX = 641;
-    if (row != 15 && col != 15) {
-        chessY = row * 43 + 37;
-        chessX = col * 43 + 41;
-    }
+
+    row = (cursorY - 37) / 43 + 1;
+    col = (cursorX - 41) / 43 + 1;
+    rowDisplay = 15 - (row - 1);
+    colDisplay = col - 1 + 'A';
+    updateChessPos(row, col);
+}
+void ChessBoard::updateChessPos(int row, int col) {
+    if (row == 15)
+        chessY = 637;
+    else
+        chessY = (row - 1) * 43 + 37;
+    if (col == 15)
+        chessX = 641;
+    else
+        chessX = (col - 1) * 43 + 41;
 }
 
-void ChessBoard::drop(int row, int col) { // 从1开始的row和col
+void ChessBoard::drop(int row, int col) {
+    updateChessPos(row, col);
+    QPixmap piecePixmap;
+    pieceDrop thisPieceDrop;
+    thisPieceDrop.row = row;
+    thisPieceDrop.col = col;
 }
 
 QPixmap imgMerge(QPixmap basePiecesImg, QPixmap newPieceImg, int x, int y) {
@@ -149,7 +158,7 @@ bool ChessBoard::winnerJudge() {
         ui->chessRecord->append("平局");
     }
     int targetNum;
-    int curRow = row + 1, curCol = col + 1; // 从1开始的行列
+    int curRow = row, curCol = col;
     if (isBlackOnChess)
         targetNum = 1;
     else
@@ -226,7 +235,7 @@ void ChessBoard::on_backButton_clicked() {
     isBlackOnChess = !isBlackOnChess;
     isCurBack = true;
     round--;
-    pieces[lastDropRow + 1][lastDropCol + 1] = 0;
+    pieces[lastDropRow][lastDropCol] = 0;
     pieceDrops.pop_back();
     if (isBlackOnChess) {
         ui->chessRecord->append(QString("悔棋：黑方撤回了在%1%2的一步").arg(lastDropColDisplay).arg(lastDropRowDisplay));
@@ -236,6 +245,7 @@ void ChessBoard::on_backButton_clicked() {
     piecesImg = lastPiecesImg;
     update();
 }
+
 void ChessBoard::on_saveButton_clicked() {
     save();
 }

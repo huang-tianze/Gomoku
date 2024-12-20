@@ -14,9 +14,9 @@
 #include <fstream>
 #include <vector>
 
-struct pieceDrop { // 由于互相include和重复定义结构体的问题，把pieceDrop的定义搬到这.
+struct pieceDrop {
     int col;
-    int row; // 存的是从0开始的col和row，最大是14(0b1110) // 不使用位域减少大小了，会在文件存储上变麻烦，没法正常读
+    int row;
     bool isBlack;
     bool isEnd;
 };
@@ -31,6 +31,7 @@ class ChessBoard : public QWidget {
 public:
     explicit ChessBoard(QWidget *parent = nullptr);
     ~ChessBoard();
+
     int pieces[16][16]; // 存储棋盘状态
     std::vector<pieceDrop> pieceDrops;
 
@@ -52,18 +53,19 @@ private:
     Ui::ChessBoard *ui;
     QStatusBar *chessStatusBar;
     int cursorX = -1, cursorY = -1;
-    int col, row; // 从0开始的
+    int col, row; // 从1开始的
     char colDisplay;
     int rowDisplay;
     int chessX, chessY;
     bool inBoard;
     int round = 1;
 
-    int lastDropRow, lastDropCol; // 从0开始
+    int lastDropRow, lastDropCol;
     int lastDropRowDisplay;
     char lastDropColDisplay;
 
     bool isBlackOnChess = true;
+    bool isBotOnChess = false;
     bool isEnded = false;
     bool isCurBack = false;
     bool isSaved = false;
@@ -73,6 +75,7 @@ private:
 
     bool winnerJudge();
     void save();
+    void updateChessPos(int, int);
     void drop(int, int);
     void calMousePos(QMouseEvent *);
 

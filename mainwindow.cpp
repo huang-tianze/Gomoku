@@ -39,11 +39,13 @@ void MainWindow::on_pvpButton_clicked() {
     chessBoard->show();
     this->hide();
 }
+
 void MainWindow::on_exitButton_clicked() {
     close();
 }
+
 void MainWindow::on_manualButton_clicked() {
-    QString fileName = QFileDialog::getOpenFileName(this, "选择文件", "", "棋谱二进制文件 (*.dat)");
+    QString fileName = QFileDialog::getOpenFileName(this, "选择文件", "D:/Files/SDU/2024ProgramDesign/Project/2-Assignment/Gomoku/chessManual", "棋谱二进制文件 (*.dat)");
     // qDebug() << fileName;
     if (fileName.isEmpty()) {
         QMessageBox::information(this, "提示", "未选择任何文件！");
@@ -70,17 +72,21 @@ void MainWindow::on_manualButton_clicked() {
     chessManual->show();
     this->hide();
 }
+
 void MainWindow::reshow() {
     this->show();
 }
+
 void MainWindow::on_actionOpen_triggered() {
     on_manualButton_clicked();
 }
+
 void MainWindow::on_pveButton_clicked() {
     chessBoard = new ChessBoard;
     connect(chessBoard, &ChessBoard::reshowRequested, this, &MainWindow::reshow);
     chessBoard->isAutoSaveOn = isAutoSaveOn();
     chessBoard->isPVE = true;
+
     QMessageBox msgBox;
     msgBox.setWindowTitle("选择棋子颜色");
     msgBox.setText("你希望选择黑棋还是白棋？（黑棋先手）");
@@ -92,6 +98,7 @@ void MainWindow::on_pveButton_clicked() {
     } else {
         chessBoard->isPlayerFist = false;
     }
+
     chessBoard->setWindowTitle("人机对战");
     chessBoard->show();
     this->hide();
