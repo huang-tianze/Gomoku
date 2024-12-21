@@ -22,7 +22,6 @@ public:
 
 private slots:
     // void chessBoardDraw();
-    void hideButton();
 
     void on_pvpButton_clicked();
     void on_exitButton_clicked();

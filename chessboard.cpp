@@ -9,6 +9,7 @@ ChessBoard::ChessBoard(QWidget *parent)
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             pieces[i][j] = 0;
+            rates[i][j] = 0;
         }
     }
     // 图标
@@ -43,12 +44,12 @@ void ChessBoard::closeEvent(QCloseEvent *event) {
 }
 
 void ChessBoard::mouseMoveEvent(QMouseEvent *event) {
-    if (isEnded) return;
+    if (isEnded || botThinking) return;
     calMousePos(event);
-    if (!inBoard)
+    if (!cursorInBoard)
         chessStatusBar->showMessage("Ciallo～(∠・ω< )⌒☆");
     else
-        chessStatusBar->showMessage(QString("%1%2").arg(colDisplay).arg(rowDisplay));
+        chessStatusBar->showMessage(QString("%1%2").arg(cursorColDisplay).arg(cursorRowDisplay));
     update(); // 让Qt更新部件，会在事件队列里加入一个QPaintEvent
 }
 
@@ -59,8 +60,7 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
     // predrop的棋子显示
     QPainter painter(this);
     painter.drawPixmap(0, 0, 1034, 738, piecesImg); // 已有棋子绘制
-    if (!inBoard) return;
-    if (pieces[row][col] != 0) return;
+    if (!cursorInBoard || pieces[cursorRow][cursorCol] != 0) return;
     painter.setRenderHint(QPainter::Antialiasing);
 
     QPixmap prePiecePixmap;
@@ -68,88 +68,92 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
         prePiecePixmap.load(":/pic/blackPiecePredrop.png");
     else
         prePiecePixmap.load(":/pic/whitePiecePredrop.png");
-    painter.drawPixmap(chessX, chessY, 27, 27, prePiecePixmap);
+    painter.drawPixmap(cursorChessX, cursorChessY, 27, 27, prePiecePixmap);
 }
+QPixmap imgMerge(QPixmap basePiecesImg, QPixmap newPieceImg, int x, int y) {
+    QPainter painter(&basePiecesImg);
+    painter.drawPixmap(x, y, 27, 27, newPieceImg);
+    return basePiecesImg;
+}
+
 void ChessBoard::mousePressEvent(QMouseEvent *event) {
-    if (isEnded) return;
-    if (!inBoard) return;
-    if (pieces[row][col] != 0) return;
+    if (botThinking || isEnded || !cursorInBoard || pieces[cursorRow][cursorCol] != 0) return;
     calMousePos(event);
-    // 悔棋相关数据存储
-    lastDropCol = col;
-    lastDropRow = row;
-    lastDropRowDisplay = rowDisplay;
-    lastDropColDisplay = colDisplay;
-    isCurBack = false;
-    // 对局过程数据存储
-    QPixmap piecePixmap;
-    pieceDrop thisPieceDrop;
-    thisPieceDrop.row = row;
-    thisPieceDrop.col = col;
-    // 落子..
-    if (isBlackOnChess) {
-        piecePixmap.load(":/pic/blackPiece.png");
-        pieces[row][col] = 1;
-        thisPieceDrop.isBlack = true;
-        ui->chessRecord->append(QString("第%1手，黑方落子：%2%3").arg(round).arg(colDisplay).arg(rowDisplay));
-    } else {
-        piecePixmap.load(":/pic/whitePiece.png");
-        pieces[row][col] = -1;
-        thisPieceDrop.isBlack = false;
-        ui->chessRecord->append(QString("第%1手，白方落子：%2%3").arg(round).arg(colDisplay).arg(rowDisplay));
-    }
-    pieces[row][0] += 1;
-    pieces[0][col] += 1;
-    pieces[0][0] += 1;
-    lastPiecesImg = piecesImg;
-    piecesImg = imgMerge(piecesImg, piecePixmap, chessX, chessY);
-    update();
-    thisPieceDrop.isEnd = winnerJudge();
-    pieceDrops.push_back(thisPieceDrop);
-    if (isEnded) save();
-    isBlackOnChess = !isBlackOnChess;
-    round++;
+    drop(cursorRow, cursorCol);
 }
 
 void ChessBoard::calMousePos(QMouseEvent *event) {
     QPoint pos = event->pos();
     cursorX = pos.x();
     cursorY = pos.y();
-
     if (cursorX > 670 || cursorY > 670 || cursorX < 41 || cursorY < 37)
-        inBoard = false;
+        cursorInBoard = false;
     else
-        inBoard = true;
+        cursorInBoard = true;
 
-    row = (cursorY - 37) / 43 + 1;
-    col = (cursorX - 41) / 43 + 1;
-    rowDisplay = 15 - (row - 1);
-    colDisplay = col - 1 + 'A';
-    updateChessPos(row, col);
+    cursorRow = (cursorY - 37) / 43 + 1;
+    cursorCol = (cursorX - 41) / 43 + 1;
+    cursorRowDisplay = 15 - (cursorRow - 1);
+    cursorColDisplay = cursorCol - 1 + 'A';
+    std::tie(cursorChessX, cursorChessY) = chessPosCalculate(cursorRow, cursorCol);
 }
-void ChessBoard::updateChessPos(int row, int col) {
+
+coord chessPosCalculate(const int &row, const int &col) {
+    coord chessPos;
     if (row == 15)
-        chessY = 637;
+        chessPos.second = 637;
     else
-        chessY = (row - 1) * 43 + 37;
+        chessPos.second = (row - 1) * 43 + 37;
     if (col == 15)
-        chessX = 641;
+        chessPos.first = 641;
     else
-        chessX = (col - 1) * 43 + 41;
+        chessPos.first = (col - 1) * 43 + 41;
+    return chessPos;
 }
 
-void ChessBoard::drop(int row, int col) {
-    updateChessPos(row, col);
+void ChessBoard::drop(const int &row, const int &col) {
+    dropRow = row;
+    dropCol = col;
+    std::tie(dropChessX, dropChessY) = chessPosCalculate(dropRow, dropCol);
+    dropRowDisplay = 15 - (dropRow - 1);
+    dropColDisplay = dropCol - 1 + 'A';
+    // 悔棋相关数据存储
+    lastDropCol = dropCol;
+    lastDropRow = dropRow;
+    lastDropRowDisplay = dropRowDisplay;
+    lastDropColDisplay = dropColDisplay;
+    isCurBack = false;
+    // 对局过程数据存储
     QPixmap piecePixmap;
     pieceDrop thisPieceDrop;
-    thisPieceDrop.row = row;
-    thisPieceDrop.col = col;
+    thisPieceDrop.row = dropRow;
+    thisPieceDrop.col = dropCol;
+    // 落子..
+    if (isBlackOnChess) {
+        piecePixmap.load(":/pic/blackPiece.png");
+        pieces[dropRow][dropCol] = 1;
+        thisPieceDrop.isBlack = true;
+        ui->chessRecord->append(QString("第%1手，黑方落子：%2%3").arg(round).arg(dropColDisplay).arg(dropRowDisplay));
+    } else {
+        piecePixmap.load(":/pic/whitePiece.png");
+        pieces[row][col] = -1;
+        thisPieceDrop.isBlack = false;
+        ui->chessRecord->append(QString("第%1手，白方落子：%2%3").arg(round).arg(dropColDisplay).arg(dropRowDisplay));
+    }
+    lastPiecesImg = piecesImg;
+    piecesImg = imgMerge(piecesImg, piecePixmap, dropChessX, dropChessY);
+    update();
+    thisPieceDrop.isEnd = winnerJudge();
+    pieceDrops.push_back(thisPieceDrop);
+    if (isEnded) save();
+    isBlackOnChess = !isBlackOnChess;
+    round++;
+    evaluate(dropRow, dropCol);
+    if (!botThinking) botDrop();
 }
 
-QPixmap imgMerge(QPixmap basePiecesImg, QPixmap newPieceImg, int x, int y) {
-    QPainter painter(&basePiecesImg);
-    painter.drawPixmap(x, y, 27, 27, newPieceImg);
-    return basePiecesImg;
+void ChessBoard::drop(const coord &rowCol) {
+    drop(rowCol.first, rowCol.second);
 }
 
 bool ChessBoard::winnerJudge() {
@@ -158,7 +162,7 @@ bool ChessBoard::winnerJudge() {
         ui->chessRecord->append("平局");
     }
     int targetNum;
-    int curRow = row, curCol = col;
+    int curRow = dropRow, curCol = dropCol;
     if (isBlackOnChess)
         targetNum = 1;
     else
@@ -190,8 +194,8 @@ bool ChessBoard::winnerJudge() {
 }
 
 void ChessBoard::save() {
-    if (isSaved) return;
-    if (pieceDrops.size() < 3) return;
+    if (isSaved || pieceDrops.size() < 3) return;
+    // if (pieceDrops.size() < 3) return;
     long long nowTime = time(NULL);
     QString fileName = "D:/Files/SDU/2024ProgramDesign/Project/2-Assignment/Gomoku/chessManual/" + QString::number(nowTime) + ".dat";
     std::ofstream outFile(fileName.toStdString(), std::ios::binary);
@@ -226,6 +230,10 @@ void ChessBoard::on_homeButton_clicked() {
 
 void ChessBoard::on_backButton_clicked() {
     if (round == 1) return;
+    if (isPVE) {
+        QMessageBox::information(this, "悔棋", "人机对局的悔棋还没完善");
+        return;
+    }
     // 由于不想增加QPixmap的存储了，只做一步悔棋. 加个QPixmap的vector存一下可以实现多步悔棋，但多步悔棋不讲武德x
     if (isCurBack) {
         QMessageBox::information(this, "悔棋", "不能连续悔棋！");
@@ -248,4 +256,38 @@ void ChessBoard::on_backButton_clicked() {
 
 void ChessBoard::on_saveButton_clicked() {
     save();
+}
+
+void ChessBoard::botInit() {
+    if (isPVE && !isPlayerFist) drop(8, 8);
+}
+
+void ChessBoard::botDrop() {
+    if (isPlayerFist)
+        secondhandBotDrop();
+    else
+        firsthandBotDrop();
+}
+void ChessBoard::firsthandBotDrop() {
+    botThinking = true;
+
+    botThinking = false;
+}
+
+void ChessBoard::secondhandBotDrop() {
+    botThinking = true;
+
+    botThinking = false;
+}
+void ChessBoard::evaluate(int row, int col) {
+    if (isPlayerFist)
+        secondhandEvaluate(row, col);
+    else
+        firsthandEvaluate(row, col);
+}
+void ChessBoard::firsthandEvaluate(int row, int col) {
+    int depth = 0;
+}
+
+void ChessBoard::secondhandEvaluate(int row, int col) {
 }

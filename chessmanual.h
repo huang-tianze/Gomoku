@@ -35,6 +35,7 @@ private:
     bool isEnded;
     QPixmap pieceImg;
     QPixmap piecesImg;
+
     void closeEvent(QCloseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 };

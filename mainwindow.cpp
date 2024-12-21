@@ -20,11 +20,6 @@ bool MainWindow::isAutoSaveOn() {
     else
         return false;
 }
-void MainWindow::hideButton() {
-    this->ui->pvpButton->hide();
-    this->ui->pveButton->hide();
-    this->ui->manualButton->hide();
-}
 
 void MainWindow::on_pvpButton_clicked() {
     chessBoard = new ChessBoard;
@@ -98,8 +93,8 @@ void MainWindow::on_pveButton_clicked() {
     } else {
         chessBoard->isPlayerFist = false;
     }
-
     chessBoard->setWindowTitle("人机对战");
     chessBoard->show();
     this->hide();
+    chessBoard->botInit(); // 可能需要show()之后才能执行painterEvent，否则会崩溃
 }
