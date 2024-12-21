@@ -29,6 +29,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         chessboard.h chessboard.cpp chessboard.ui
         chessmanual.h chessmanual.cpp chessmanual.ui
+        define.h robot.cpp robot.h
 
 
 

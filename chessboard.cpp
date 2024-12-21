@@ -9,7 +9,6 @@ ChessBoard::ChessBoard(QWidget *parent)
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             pieces[i][j] = 0;
-            rates[i][j] = 0;
         }
     }
     // 图标
@@ -112,8 +111,10 @@ coord chessPosCalculate(const int &row, const int &col) {
 }
 
 void ChessBoard::drop(const int &row, const int &col) {
+
     dropRow = row;
     dropCol = col;
+    updateBorder();
     std::tie(dropChessX, dropChessY) = chessPosCalculate(dropRow, dropCol);
     dropRowDisplay = 15 - (dropRow - 1);
     dropColDisplay = dropCol - 1 + 'A';
@@ -148,8 +149,21 @@ void ChessBoard::drop(const int &row, const int &col) {
     if (isEnded) save();
     isBlackOnChess = !isBlackOnChess;
     round++;
-    evaluate(dropRow, dropCol);
     if (!botThinking) botDrop();
+}
+
+void ChessBoard::updateBorder() {
+    if (round == 1) {
+        border.pos1.second = std::max(dropCol - 1, 1);
+        border.pos1.first = std::max(dropRow - 1, 1);
+        border.pos2.second = std::min(dropCol + 1, 15);
+        border.pos2.first = std::min(dropRow + 1, 15);
+        return;
+    }
+    if (border.pos1.second >= dropCol) border.pos1.second = std::max(dropCol - 1, 1);
+    if (border.pos1.first >= dropRow) border.pos1.first = std::max(dropRow - 1, 1);
+    if (border.pos2.second <= dropCol) border.pos2.second = std::min(dropCol + 1, 15);
+    if (border.pos2.first <= dropRow) border.pos2.first = std::min(dropRow + 1, 15);
 }
 
 void ChessBoard::drop(const coord &rowCol) {
@@ -263,31 +277,7 @@ void ChessBoard::botInit() {
 }
 
 void ChessBoard::botDrop() {
-    if (isPlayerFist)
-        secondhandBotDrop();
-    else
-        firsthandBotDrop();
-}
-void ChessBoard::firsthandBotDrop() {
     botThinking = true;
-
+    drop(invokeBot(pieces, border, difficulty, isPlayerFist));
     botThinking = false;
-}
-
-void ChessBoard::secondhandBotDrop() {
-    botThinking = true;
-
-    botThinking = false;
-}
-void ChessBoard::evaluate(int row, int col) {
-    if (isPlayerFist)
-        secondhandEvaluate(row, col);
-    else
-        firsthandEvaluate(row, col);
-}
-void ChessBoard::firsthandEvaluate(int row, int col) {
-    int depth = 0;
-}
-
-void ChessBoard::secondhandEvaluate(int row, int col) {
 }

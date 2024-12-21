@@ -88,11 +88,20 @@ void MainWindow::on_pveButton_clicked() {
     QPushButton *yes = msgBox.addButton("黑棋", QMessageBox::YesRole);
     QPushButton *no = msgBox.addButton("白棋", QMessageBox::NoRole);
     msgBox.exec();
+    bool numInput;
     if (msgBox.clickedButton() == yes) {
         chessBoard->isPlayerFist = true;
     } else {
         chessBoard->isPlayerFist = false;
     }
+    chessBoard->difficulty = QInputDialog::getInt(nullptr,
+                                                  "选择难度",
+                                                  "输入一个难度数字:",
+                                                  3,  // 默认值
+                                                  1,  // min
+                                                  10, // max
+                                                  1,  // 步长
+                                                  &numInput);
     chessBoard->setWindowTitle("人机对战");
     chessBoard->show();
     this->hide();

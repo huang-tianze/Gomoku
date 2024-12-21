@@ -4,6 +4,7 @@
 #include "chessboard.h"
 #include "chessmanual.h"
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE

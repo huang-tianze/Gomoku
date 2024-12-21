@@ -14,17 +14,12 @@
 #include <fstream>
 #include <vector>
 
+#include "define.h"
+#include "robot.h"
 namespace Ui {
     class ChessBoard;
 }
-struct pieceDrop {
-    int col;
-    int row;
-    bool isBlack;
-    bool isEnd;
-};
-typedef std::pair<int, int> coord;
-typedef std::pair<int, int> coord;
+
 class ChessBoard : public QWidget {
     Q_OBJECT
 
@@ -33,7 +28,6 @@ public:
     ~ChessBoard();
 
     int pieces[16][16]; // 存储棋盘状态
-    int rates[16][16];
     std::vector<pieceDrop> pieceDrops;
 
     bool isPVE = false;
@@ -88,19 +82,14 @@ private:
     void drop(const coord &);
     void calMousePos(QMouseEvent *);
 
+    borderPos border;
+    void updateBorder();
     void botDrop();
-    void firsthandBotDrop();
-    void secondhandBotDrop();
-    void evaluate(int, int);
-    void firsthandEvaluate(int, int);
-    void secondhandEvaluate(int, int);
 
     void closeEvent(QCloseEvent *event) override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
 };
-QPixmap imgMerge(QPixmap, QPixmap, int, int);
-coord chessPosCalculate(const int &, const int &);
 
 #endif // CHESSBOARD_H
