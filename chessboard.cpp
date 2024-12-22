@@ -273,11 +273,17 @@ void ChessBoard::on_saveButton_clicked() {
 }
 
 void ChessBoard::botInit() {
+    botThinking = true;
     if (isPVE && !isPlayerFist) drop(8, 8);
+    botThinking = false;
 }
 
 void ChessBoard::botDrop() {
     botThinking = true;
-    drop(invokeBot(pieces, border, difficulty, isPlayerFist));
+
+    coord tmp = invokeBot(pieces, border, difficulty, isPlayerFist);
+    // qDebug() << "border: " << border.pos1 << border.pos2;
+    // qDebug() << tmp;
+    drop(tmp);
     botThinking = false;
 }
