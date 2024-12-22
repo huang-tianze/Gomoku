@@ -1,3 +1,10 @@
+#define DEBUG_LOG 1
+#if DEBUG_LOG
+#define LOG(x) qDebug() << (x)
+#else
+#define LOG(x)
+#endif
+
 #include "robot.h"
 
 #define EXPAND_RADIUS 1
@@ -154,8 +161,8 @@ int minimax_alphabeta(int depth, bool isMaxnode, int alpha, int beta, borderPos 
             maxScore = std::max(maxScore, score);
             alpha = std::max(alpha, score);
             if (beta <= alpha) {
+                LOG("剪枝");
                 break;
-                qDebug() << "剪枝";
             } // 不满足alpha < beta就break
         }
         return maxScore;
@@ -168,8 +175,8 @@ int minimax_alphabeta(int depth, bool isMaxnode, int alpha, int beta, borderPos 
             minScore = std::min(minScore, score);
             beta = std::min(beta, score);
             if (beta <= alpha) {
+                LOG("剪枝");
                 break;
-                qDebug() << "剪枝";
             }
         }
         return minScore;

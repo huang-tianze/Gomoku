@@ -279,6 +279,7 @@ void ChessBoard::botInit() {
 }
 
 void ChessBoard::botDrop() {
+    if (isEnded) return;
     botThinking = true;
 
     coord tmp = invokeBot(pieces, border, difficulty, isPlayerFist);
