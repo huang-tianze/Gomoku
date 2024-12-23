@@ -6,12 +6,16 @@
 #include <iostream>
 #include <limits>
 #include <stack>
+#include <unordered_map>
 #include <vector>
 
 std::vector<coord> getValidDrops(borderPos);
-std::vector<coord> getSubboard(borderPos border);
+std::vector<coord> getChess(borderPos border);
 int evaluate(borderPos);
-std::pair<int, int> patternMatch(coord);
+std::string getLine(coord, int, int, int);
+int evaluateLine(coord piece, int dx, int dy, int chess);
+void markPicked(int &num, int dx, int dy);
+bool isPicked(int, int dx, int dy);
 int minimax_alphabeta(int depth, bool isMaximizing, int alpha, int beta, borderPos);
 coord invokeBot(int[16][16], borderPos, int, bool);
 void dropChess(coord, int);
@@ -21,6 +25,9 @@ void inverseVector(std::vector<int> &);
 borderPos updateBorder(int, int, borderPos);
 borderPos expandBorder(borderPos, int);
 borderPos updateBorder(coord, borderPos);
+bool win(coord);
+int chessCount(coord dropPos, int dx, int dy);
+bool inBoard(int);
 
 void debugOutput(int[16][16]);
 

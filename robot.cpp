@@ -8,50 +8,41 @@
 #include "robot.h"
 
 #define EXPAND_RADIUS 1
+#define LINE_LENGTH 4
 int botPiece;
 int board[16][16];
-int picked[16][16];
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_7 = {
-    {{-1, 0, 1, 1, 1, 0, -1}, 100}}; // 眠3
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_6 = {
-    {{0, 1, 1, 1, 1, 0}, 9000},  // 活4
-    {{0, 1, 1, 1, 1, -1}, 1000}, // 冲4
-    {{0, 0, 1, 1, 1, -1}, 100},  // 眠3
-    {{0, 1, 0, 1, 1, -1}, 100},
-    {{0, 1, 1, 0, 1, -1}, 100},
-    {{0, 0, 1, 1, 0, 0}, 10},   // 活2
-    {{0, 1, 0, 1, 1, 0}, 100},  // 活3
-    {{0, 0, 0, 1, 1, -1}, 100}, // 眠2
-    {{0, 0, 1, 0, 1, -1}, 100},
-    {{0, 1, 0, 0, 1, -1}, 100}};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_5 = {
-    {{1, 1, 1, 1, 1}, 10000}, // 连5
-    {{1, 0, 1, 1, 1}, 800},   // 冲4
-    {{1, 1, 0, 1, 1}, 800},
-    {{0, 1, 1, 1, 0}, 800}, // 活3
-    {{1, 0, 0, 1, 1}, 100}, // 眠3
-    {{1, 0, 1, 0, 1}, 100},
-    {{0, 1, 0, 1, 0}, 10}, // 活2
-    {{1, 0, 0, 0, 1}, 10}  // 眠2
-};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_4 = {
-    {{1, 0, 0, 1}, 10}, // 活2
-};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_3 = {};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_2 = {};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_1 = {};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_0 = {};
-const std::vector<std::pair<std::vector<int>, int>> PATTERNS_BLANK = {};
-const std::vector<std::vector<std::pair<std::vector<int>, int>>> patterns = {
-    PATTERNS_0, PATTERNS_1, PATTERNS_2, PATTERNS_3, PATTERNS_4, PATTERNS_5, PATTERNS_6, PATTERNS_7};
+// int picked[16][16];
+// TODO: 取舍，一种方案是舍弃picked数组，遍历棋盘评分，不需要写对称情形，，另一种是使用picked，但需要对称情形的pattern,但需要足够长的LINE_LENGTH——————>舍弃picked
+std::unordered_map<std::string, int> pattern_score = {
+    // 连5、活4
+    {"11111", 1000000},
+    {"011110", 100000},
+    // 冲4
+    {"011112", 1000},
+    {"11011", 3000},
+    {"10111", 3000},
+    // 活3
+    {"01110", 500},
+    {"010110", 500},
+    // 眠3
+    {"001112", 50},
+    {"010112", 50},
+    {"011012", 50},
+    {"10011", 70},
+    {"10101", 100},
+    {"2011102", 80},
+    // 活2
+    {"001100", 20},
+    {"01010", 20},
+    {"010010", 20},
+    // 眠2
+    {"000112", 5},
+    {"001012", 5},
+    {"010012", 5},
 
-const int DIRECTION[4][2] = {
-    {0, 1}, // 水平
-    {1, 0}, // 垂直
-    {1, 1}, // 主对角线
-    {1, -1} // 副对角线
-};
+    {{"10001"}, 5}};
 
+// TODO: 可以加权平均计算row和col的均值，来选择从四角哪个店开始遍历
 std::vector<coord> getValidDrops(borderPos border) {
     // qDebug() << "getValidDrops";
     std::vector<coord> drops;
@@ -67,65 +58,101 @@ std::vector<coord> getValidDrops(borderPos border) {
     return drops;
 }
 
-std::vector<coord> getSubboard(borderPos border) {
+std::vector<coord> getChess(borderPos border) {
     // qDebug() << "getSubboard";
     std::vector<coord> pieces;
     for (int i = border.pos1.first; i <= border.pos2.first; i++) {
         for (int j = border.pos1.second; j <= border.pos2.second; j++) {
-            pieces.push_back({i, j});
+            if (board[i][j] != 0) {
+                pieces.push_back({i, j});
+            }
         }
     }
     return pieces;
 }
+
 int evaluate(borderPos border) {
     // qDebug() << "evaluate";
     int score = 0;
     int scoreInv = 0;
-    memset(picked, 0, sizeof(picked));
-    for (auto pos : getSubboard(border)) {
-        std::pair<int, int> tmp = patternMatch(pos);
-        score += tmp.first;
-        scoreInv += tmp.second;
+    // memset(picked, 0, sizeof(picked));
+    for (auto piece : getChess(border)) {
+        score += evaluateLine(piece, 1, 0, botPiece);
+        score += evaluateLine(piece, 1, 1, botPiece);
+        score += evaluateLine(piece, 0, 1, botPiece);
+        score += evaluateLine(piece, 1, -1, botPiece);
+
+        scoreInv += evaluateLine(piece, 1, 0, 3 - botPiece);
+        scoreInv += evaluateLine(piece, 1, 1, 3 - botPiece);
+        scoreInv += evaluateLine(piece, 0, 1, 3 - botPiece);
+        scoreInv += evaluateLine(piece, 1, -1, 3 - botPiece);
     }
     // qDebug() << "score: " << score;
     // qDebug() << "scoreInv: " << scoreInv;
     return score - scoreInv;
 }
 
-std::pair<int, int> patternMatch(coord pos) {
-    // qDebug() << "match";
-    int score = 0;
-    int scoreInv = 0;
-    int x = pos.first;
-    int y = pos.second;
-    for (auto direction : DIRECTION) {
-        int dx = direction[0];
-        int dy = direction[1];
-        std::vector<int> pattern;
-        // 计算score
-        for (int i = 0; i < 7; i++) {
-            int newX = x + i * dx;
-            int newY = y + i * dy;
-            if (newX < 1 || newY < 1 || newX > 15 || newY > 15)
-                pattern.push_back(3); // 3作为一个空格占位，后面再对于具体分的时候将其变换成需要的数
-            else
-                pattern.push_back(board[newX][newY]);
-            if (i >= 3) {
-                for (auto pattern_score : patterns[i + 1]) {
-                    // if(botPiece == 1) {
-                    std::vector<int> patternProcessed = processBlank(pattern, -botPiece);
-                    if (pattern_score.first == patternProcessed) score += pattern_score.second;
-                    patternProcessed = processBlank(pattern, botPiece);
-                    inverseVector(patternProcessed);
-                    if (pattern_score.first == patternProcessed) scoreInv += pattern_score.second;
-                    // }
-                }
-            }
+std::string getLine(coord piece, int dx, int dy, int chess) {
+    int x = piece.first;
+    int y = piece.second;
+    int self = chess;
+    int rival = 3 - self;
+    std::string line = "";
+    for (int i = -LINE_LENGTH; i <= LINE_LENGTH; i++) {
+        int X = x + i * dx;
+        int Y = y + i * dy;
+        if (!inBoard(X) || !inBoard(Y) || board[X][Y] == rival) {
+            line += "2";
+        } else if (board[X][Y] == 0) {
+            line += "0";
+            // markPicked(picked[X][Y], dx, dy);
+        } else {
+            line += "1";
+            // markPicked(picked[X][Y], dx, dy);
         }
     }
-    std::pair<int, int> scorePair = {score, scoreInv};
-    return scorePair;
+    return line;
 }
+int evaluateLine(coord piece, int dx, int dy, int chess) {
+    int x = piece.first;
+    int y = piece.second;
+    // if (isPicked(picked[x][y], dx, dy)) return 0;
+    int score = 0;
+    std::string line = getLine(piece, dx, dy, chess);
+    for (const auto &pattern : pattern_score) {
+        std::string target = pattern.first;
+        int index = line.find(target);
+        while (index != std::string::npos) {
+            score += pattern.second;
+            // qDebug() << target;
+            index = line.find(target, index + 1);
+        }
+    }
+    return score;
+}
+
+void markPicked(int &num, int dx, int dy) {
+    int mode;
+    if (dx == 1 && dy == 1) mode = 3;
+    if (dx == 1 && dy == -1) mode = 4;
+    if (dx == 0 && dy == 1) mode = 2;
+    if (dx == 1 && dy == 0) mode = 1;
+    // 第0、1、2、3位分别表示垂直、水平、主对角线、副对角线是否被评估过
+    num += 1 << mode;
+}
+
+bool isPicked(int num, int dx, int dy) {
+    int mode;
+    if (dx == 1 && dy == 1) mode = 3;
+    if (dx == 1 && dy == -1) mode = 4;
+    if (dx == 0 && dy == 1) mode = 2;
+    if (dx == 1 && dy == 0) mode = 1;
+    if (num >> mode & 1 == 1)
+        return true;
+    else
+        return false;
+}
+
 std::vector<int> processBlank(std::vector<int> vct, int tgtNum) {
     for (auto &num : vct) {
         if (num == 3) num = tgtNum;
@@ -150,38 +177,47 @@ void inverseVector(std::vector<int> &vct) {
 int minimax_alphabeta(int depth, bool isMaxnode, int alpha, int beta, borderPos border) {
     // qDebug() << "depth: " << depth;
     if (depth == 0) return evaluate(border);
+
     if (isMaxnode) {
         // 相当于当前博弈树节点是max节点，由自己决策，for循环遍历该节点情况下的所有情况
+        // 已完成 TODO: 需要加上胜利判断，阻止一方胜利后，还在往下搜索，导致分数相减
         int maxScore = -std::numeric_limits<int>::max();
         for (auto drop : getValidDrops(border)) {
             dropChess(drop, botPiece);
-            int score = minimax_alphabeta(depth - 1, false, alpha, beta, updateBorder(drop, border)); // 递归相当于假定已经得到了max节点的所有子节点的评估分
+            if (win(drop)) return isMaxnode ? std::numeric_limits<int>::max() : -std::numeric_limits<int>::max();
+            int maxScore = minimax_alphabeta(depth - 1, false, alpha, beta, updateBorder(drop, border)); // 递归相当于假定已经得到了max节点的所有子节点的评估分
             undoDrop(drop);
+            alpha = std::max(alpha, maxScore);
+            // qDebug() << alpha << "," << maxScore;
             // 寻找max节点的子节点里的最大值，更新maxScore和alpha (两者基本上等价)
-            maxScore = std::max(maxScore, score);
-            alpha = std::max(alpha, score);
             if (beta <= alpha) {
-                LOG("剪枝");
+                // LOG("剪枝");
                 break;
             } // 不满足alpha < beta就break
+
+            // LOG(alpha);
         }
-        return maxScore;
+        // LOG(maxScore);
+        return alpha; // md万恶之源，忘记改成alpha了，一直返回的maxScore
     } else {
         int minScore = std::numeric_limits<int>::max();
         for (auto drop : getValidDrops(border)) {
-            dropChess(drop, -botPiece);
-            int score = minimax_alphabeta(depth - 1, true, alpha, beta, border);
+            dropChess(drop, 3 - botPiece);
+            if (win(drop)) return evaluate(border);
+            int minScore = minimax_alphabeta(depth - 1, true, alpha, beta, border);
             undoDrop(drop);
-            minScore = std::min(minScore, score);
-            beta = std::min(beta, score);
+            beta = std::min(beta, minScore);
+            // qDebug() << beta << "," << minScore;
             if (beta <= alpha) {
-                LOG("剪枝");
+                // LOG("剪枝");
                 break;
             }
         }
-        return minScore;
+        // LOG(minScore);
+        return beta;
     }
 }
+
 coord invokeBot(int pieces[16][16], borderPos border, int depth, bool isPlayerFirst) {
     // debugOutput(pieces);
     // border = expandBorder(border, 1);
@@ -191,21 +227,24 @@ coord invokeBot(int pieces[16][16], borderPos border, int depth, bool isPlayerFi
         }
     }
     if (isPlayerFirst)
-        botPiece = -1;
+        botPiece = 2;
     else
         botPiece = 1;
 
     int bestScore = -std::numeric_limits<int>::max();
+    // qDebug() << bestScore;
     coord bestDrop;
     for (auto drop : getValidDrops(border)) {
         dropChess(drop, botPiece);
         int dropScore = minimax_alphabeta(depth - 1, false, -std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), border);
+        // qDebug() << "dropScore: " << dropScore;
         undoDrop(drop);
         if (dropScore > bestScore) {
             bestScore = dropScore;
             bestDrop = drop;
         }
     }
+    qDebug() << bestDrop << "," << bestScore;
     return bestDrop;
 }
 
@@ -243,4 +282,43 @@ void debugOutput(int arr[16][16]) {
 }
 int main() {
     return 0;
+}
+bool win(coord dropPos) {
+    int count = 0;
+    if (chessCount(dropPos, 1, 0) >= 4 || chessCount(dropPos, 1, 1) >= 4 || chessCount(dropPos, 0, 1) >= 4 || chessCount(dropPos, 1, -1) >= 4) {
+        // LOG("win");
+        return true;
+    } else
+        return false;
+}
+
+int chessCount(coord dropPos, int dx, int dy) {
+    int x = dropPos.first;
+    int y = dropPos.second;
+    int chessInt = board[x][y];
+    int count = 0;
+    for (int i = 1; i <= 4; i++) {
+        int X = x + i * dx;
+        int Y = y + i * dy;
+        if (!inBoard(X) || !inBoard(Y) || board[X][Y] != chessInt)
+            break;
+        else
+            count++;
+    }
+    for (int i = 1; i <= 4; i++) {
+        int X = x - i * dx;
+        int Y = y - i * dy;
+        if (!inBoard(X) || !inBoard(Y) || board[X][Y] != chessInt)
+            break;
+        else
+            count++;
+    }
+    return count;
+}
+
+bool inBoard(int x) {
+    if (1 <= x && x <= 15)
+        return true;
+    else
+        return false;
 }

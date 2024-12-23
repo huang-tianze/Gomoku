@@ -137,7 +137,7 @@ void ChessBoard::drop(const int &row, const int &col) {
         ui->chessRecord->append(QString("第%1手，黑方落子：%2%3").arg(round).arg(dropColDisplay).arg(dropRowDisplay));
     } else {
         piecePixmap.load(":/pic/whitePiece.png");
-        pieces[row][col] = -1;
+        pieces[row][col] = 2; // 1黑棋，2白棋
         thisPieceDrop.isBlack = false;
         ui->chessRecord->append(QString("第%1手，白方落子：%2%3").arg(round).arg(dropColDisplay).arg(dropRowDisplay));
     }
@@ -149,7 +149,7 @@ void ChessBoard::drop(const int &row, const int &col) {
     if (isEnded) save();
     isBlackOnChess = !isBlackOnChess;
     round++;
-    if (!botThinking) botDrop();
+    if (!botThinking && isPVE) botDrop();
 }
 
 void ChessBoard::updateBorder() {
@@ -180,7 +180,7 @@ bool ChessBoard::winnerJudge() {
     if (isBlackOnChess)
         targetNum = 1;
     else
-        targetNum = -1;
+        targetNum = 2;
     int verticalCount = 0;
     int horizontalCount = 0;
     int mainDiagonalCount = 0;
@@ -274,7 +274,7 @@ void ChessBoard::on_saveButton_clicked() {
 
 void ChessBoard::botInit() {
     botThinking = true;
-    if (isPVE && !isPlayerFist) drop(8, 8);
+    if (isPVE && !isPlayerFirst) drop(8, 8);
     botThinking = false;
 }
 
@@ -282,7 +282,7 @@ void ChessBoard::botDrop() {
     if (isEnded) return;
     botThinking = true;
 
-    coord tmp = invokeBot(pieces, border, difficulty, isPlayerFist);
+    coord tmp = invokeBot(pieces, border, difficulty, isPlayerFirst);
     // qDebug() << "border: " << border.pos1 << border.pos2;
     // qDebug() << tmp;
     drop(tmp);

@@ -73,7 +73,7 @@ void ChessManual::on_nextButton_clicked() {
             QMessageBox::information(this, "对局结束！", "白方胜利！");
         }
     }
-    if (round - 1 >= pieceDrops.size()) {
+    if (round >= pieceDrops.size()) {
         isEnded = true;
         ui->nextButton->setEnabled(false);
     }

@@ -90,9 +90,9 @@ void MainWindow::on_pveButton_clicked() {
     msgBox.exec();
     bool numInput;
     if (msgBox.clickedButton() == yes) {
-        chessBoard->isPlayerFist = true;
+        chessBoard->isPlayerFirst = true;
     } else {
-        chessBoard->isPlayerFist = false;
+        chessBoard->isPlayerFirst = false;
     }
     chessBoard->difficulty = QInputDialog::getInt(nullptr,
                                                   "选择难度",

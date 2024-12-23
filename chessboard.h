@@ -31,7 +31,7 @@ public:
     std::vector<pieceDrop> pieceDrops;
 
     bool isPVE = false;
-    bool isPlayerFist = true;
+    bool isPlayerFirst = true;
     int difficulty = 0;
     bool botThinking = false;
     void botInit();
