@@ -83,3 +83,6 @@ CMakeLists.txt.user*
 
 *test*.cpp
 *.dat
+
+# clangd cache
+.cache/

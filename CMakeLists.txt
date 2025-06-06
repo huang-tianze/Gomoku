@@ -9,6 +9,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+set(Torch_DIR /opt/libtorch/share/cmake/Torch)
+find_package(Torch REQUIRED)
+
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
@@ -59,6 +64,7 @@ else()
 endif()
 
 target_link_libraries(Gomoku PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Gomoku PUBLIC "${TORCH_LIBRARIES}")
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

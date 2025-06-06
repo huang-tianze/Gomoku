@@ -16,14 +16,15 @@
 
 #include "define.h"
 #include "robot.h"
+
 namespace Ui {
-    class ChessBoard;
+class ChessBoard;
 }
 
 class ChessBoard : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit ChessBoard(QWidget *parent = nullptr);
     ~ChessBoard();
 
@@ -38,15 +39,15 @@ public:
 
     bool isAutoSaveOn;
 
-signals:
+  signals:
     void reshowRequested();
 
-private slots:
+  private slots:
     void on_homeButton_clicked();
     void on_saveButton_clicked();
     void on_backButton_clicked();
 
-private:
+  private:
     Ui::ChessBoard *ui;
     QStatusBar *chessStatusBar;
     // mouseTracking
@@ -84,9 +85,10 @@ private:
 
     borderPos border;
     void updateBorder();
-    void botDrop();
+    void botDrop(const int &row, const int &col);
 
-    void closeEvent(QCloseEvent *event) override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
+    void closeEvent(QCloseEvent *event)
+        override; // 重写关闭事件，使得关闭子窗口的时候，主窗口能显示
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
