@@ -1,18 +1,18 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QPainter>
+
 MainWindow::MainWindow(QWidget *parent) // 供main调用的窗口构造函数
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     ui->statusbar->showMessage("Ciallo～(∠・ω< )⌒☆");
 }
 
-MainWindow::~MainWindow() {
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
 // void MainWindow::chessBoardDraw() { // deprecated..
-//     this->centralWidget()->setStyleSheet("background-image: url(:/pic/chessBoard.png);");
+//     this->centralWidget()->setStyleSheet("background-image:
+//     url(:/pic/chessBoard.png);");
 // }
 bool MainWindow::isAutoSaveOn() {
     if (this->ui->actionAutoSave->isChecked())
@@ -23,9 +23,11 @@ bool MainWindow::isAutoSaveOn() {
 
 void MainWindow::on_pvpButton_clicked() {
     chessBoard = new ChessBoard;
-    // 由于某种未知原因，需要在chessBoard的UI内加入一个Widget来显示内容，主窗口不显示内容, this继承父关系(由于通过信号与槽重构了显示方法，不需要继承关系了，也不需要setWindowFlag了)
+    // 由于某种未知原因，需要在chessBoard的UI内加入一个Widget来显示内容，主窗口不显示内容,
+    // this继承父关系(由于通过信号与槽重构了显示方法，不需要继承关系了，也不需要setWindowFlag了)
     // 连接子窗口的信号
-    connect(chessBoard, &ChessBoard::reshowRequested, this, &MainWindow::reshow);
+    connect(chessBoard, &ChessBoard::reshowRequested, this,
+            &MainWindow::reshow);
     chessBoard->isAutoSaveOn = isAutoSaveOn();
     // chessBoard->setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint);
     // 将chessBoard的窗口设置在新的窗口，防止其直接在MainWindow内部显示（但保留与mainwindow的父子关系）
@@ -35,12 +37,14 @@ void MainWindow::on_pvpButton_clicked() {
     this->hide();
 }
 
-void MainWindow::on_exitButton_clicked() {
-    close();
-}
+void MainWindow::on_exitButton_clicked() { close(); }
 
 void MainWindow::on_manualButton_clicked() {
-    QString fileName = QFileDialog::getOpenFileName(this, "选择文件", "D:/Files/SDU/2024ProgramDesign/Project/2-Assignment/Gomoku/chessManual", "棋谱二进制文件 (*.dat)");
+    QString fileName =
+        QFileDialog::getOpenFileName(this, "选择文件",
+                                     "D:/Files/SDU/2024ProgramDesign/Project/"
+                                     "2-Assignment/Gomoku/chessManual",
+                                     "棋谱二进制文件 (*.dat)");
     // qDebug() << fileName;
     if (fileName.isEmpty()) {
         QMessageBox::information(this, "提示", "未选择任何文件！");
@@ -53,13 +57,15 @@ void MainWindow::on_manualButton_clicked() {
     }
     // 由于光标的问题，需要创建窗口在文件选择之后，不然修正光标的Timer会计入选文件时候的时间
     chessManual = new ChessManual;
-    connect(chessManual, &ChessManual::reshowRequested, this, &MainWindow::reshow);
+    connect(chessManual, &ChessManual::reshowRequested, this,
+            &MainWindow::reshow);
     chessManual->setWindowTitle("棋谱查看");
 
     while (inFile) {
         pieceDrop drop;
         inFile.read(reinterpret_cast<char *>(&drop), sizeof(pieceDrop));
-        if (inFile.eof()) break; // 不加eof判断的话，不知道为什么最后一条数据会重复一次
+        if (inFile.eof())
+            break; // 不加eof判断的话，不知道为什么最后一条数据会重复一次
         chessManual->pieceDrops.push_back(drop);
     }
     inFile.close();
@@ -68,17 +74,14 @@ void MainWindow::on_manualButton_clicked() {
     this->hide();
 }
 
-void MainWindow::reshow() {
-    this->show();
-}
+void MainWindow::reshow() { this->show(); }
 
-void MainWindow::on_actionOpen_triggered() {
-    on_manualButton_clicked();
-}
+void MainWindow::on_actionOpen_triggered() { on_manualButton_clicked(); }
 
 void MainWindow::on_pveButton_clicked() {
-    chessBoard = new ChessBoard;
-    connect(chessBoard, &ChessBoard::reshowRequested, this, &MainWindow::reshow);
+    chessBoard = new ChessBoard(nullptr, true);
+    connect(chessBoard, &ChessBoard::reshowRequested, this,
+            &MainWindow::reshow);
     chessBoard->isAutoSaveOn = isAutoSaveOn();
     chessBoard->isPVE = true;
 
@@ -94,14 +97,13 @@ void MainWindow::on_pveButton_clicked() {
     } else {
         chessBoard->isPlayerFirst = false;
     }
-    chessBoard->difficulty = QInputDialog::getInt(nullptr,
-                                                  "选择难度",
-                                                  "输入一个难度数字:",
-                                                  3,  // 默认值
-                                                  1,  // min
-                                                  10, // max
-                                                  1,  // 步长
-                                                  &numInput);
+    chessBoard->difficulty =
+        QInputDialog::getInt(nullptr, "选择难度", "输入一个难度数字:",
+                             3,  // 默认值
+                             1,  // min
+                             10, // max
+                             1,  // 步长
+                             &numInput);
     chessBoard->setWindowTitle("人机对战");
     chessBoard->show();
     this->hide();

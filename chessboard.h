@@ -25,7 +25,7 @@ class ChessBoard : public QWidget {
     Q_OBJECT
 
   public:
-    explicit ChessBoard(QWidget *parent = nullptr);
+    explicit ChessBoard(QWidget *parent = nullptr, bool _isPVE = false);
     ~ChessBoard();
 
     int pieces[16][16]; // 存储棋盘状态
@@ -56,7 +56,7 @@ class ChessBoard : public QWidget {
     char cursorColDisplay;
     int cursorRowDisplay;
     int cursorChessX, cursorChessY;
-    bool cursorInBoard;
+    bool cursorInBoard = false;
     // drop piece
     int dropCol, dropRow;
     int dropRowDisplay;

@@ -1,10 +1,12 @@
 #include "chessboard.h"
+#include "api.h"
 #include "mainwindow.h"
 #include "robot.h"
 #include "ui_chessboard.h"
+#include <qdir.h>
 
-ChessBoard::ChessBoard(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ChessBoard) {
+ChessBoard::ChessBoard(QWidget *parent, bool _isPVE)
+    : QWidget(parent), ui(new Ui::ChessBoard), isPVE(_isPVE) {
     ui->setupUi(this);
     // 棋盘状态置0
     for (int i = 0; i < 16; i++) {
@@ -31,6 +33,9 @@ ChessBoard::ChessBoard(QWidget *parent)
     QTimer::singleShot(10, this,
                        [this]() { this->setCursor(Qt::ArrowCursor); });
     // 不知道什么原因，打开窗口的时候光标会变成拉伸光标，这里做个10ms的延时改光标纠正一下
+    if (_isPVE) {
+        this->ui->backButton->setText("LLM解析");
+    }
 }
 
 ChessBoard::~ChessBoard() { delete ui; }
@@ -61,6 +66,7 @@ void ChessBoard::paintEvent(QPaintEvent *event) {
     // predrop的棋子显示
     QPainter painter(this);
     painter.drawPixmap(0, 0, 1034, 738, piecesImg); // 已有棋子绘制
+    // std::cout << cursorCol << ' ' << cursorRow << std::endl;
     if (!cursorInBoard || pieces[cursorRow][cursorCol] != 0)
         return;
     painter.setRenderHint(QPainter::Antialiasing);
@@ -287,7 +293,11 @@ void ChessBoard::on_backButton_clicked() {
     if (round == 1)
         return;
     if (isPVE) {
-        QMessageBox::information(this, "悔棋", "人机对局的悔棋还没完善");
+        std::string message =
+            call_deepseek(pieces, {dropRow, dropCol}, !isPlayerFirst,
+                          API_MODE::analyze_opponent_move);
+        QMessageBox::information(this, "LLM解析",
+                                 QString::fromStdString(message));
         return;
     }
     // 由于不想增加QPixmap的存储了，只做一步悔棋.

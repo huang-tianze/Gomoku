@@ -64,7 +64,9 @@ else()
 endif()
 
 target_link_libraries(Gomoku PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+message("${TORCH_LIBRARIES}")
 target_link_libraries(Gomoku PUBLIC "${TORCH_LIBRARIES}")
+target_link_libraries(Gomoku PUBLIC curl)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -90,3 +92,6 @@ install(TARGETS Gomoku
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(Gomoku)
 endif()
+
+add_executable(api api.cpp)
+target_link_libraries(api PUBLIC curl)
