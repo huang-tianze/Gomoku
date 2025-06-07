@@ -1,4 +1,6 @@
+#include "config.h"
 #include "define.h"
+
 #define DEBUG_LOG 1
 #if DEBUG_LOG
 #define LOG(x) qDebug() << (x)
@@ -329,7 +331,7 @@ struct Coor {
     float p;
 };
 
-const std::string modelPath = "../models/best_checkpoint.pt";
+// const std::string modelPath = "../models/best_checkpoint.pt";
 
 Coor get_action(int board_[3][15][15]) {
     try {
@@ -376,7 +378,16 @@ Coor get_action(int board_[3][15][15]) {
 // }
 
 coord invokeBot(int piece[16][16], coord pos, bool isPlayerFirst) {
-    int board[3][15][15] = {{{0}}};
+    int board[3][15][15];
+
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 15; ++j) {
+            for (int k = 0; k < 15; k++) {
+                board[i][j][k] = 0;
+            }
+        }
+    }
+
     for (int i = 0; i < 15; ++i) {
         for (int j = 1; j < 15; ++j) {
             if (piece[i + 1][j + 1] == 1) {

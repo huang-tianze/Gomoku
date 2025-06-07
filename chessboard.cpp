@@ -1,5 +1,6 @@
 #include "chessboard.h"
 #include "api.h"
+#include "config.h"
 #include "mainwindow.h"
 #include "robot.h"
 #include "ui_chessboard.h"
@@ -255,9 +256,8 @@ void ChessBoard::save() {
         return;
     // if (pieceDrops.size() < 3) return;
     long long nowTime = time(NULL);
-    QString fileName = "D:/Files/SDU/2024ProgramDesign/Project/2-Assignment/"
-                       "Gomoku/chessManual/" +
-                       QString::number(nowTime) + ".dat";
+    QString fileName =
+        QString::fromStdString(savePath) + QString::number(nowTime) + ".dat";
     std::ofstream outFile(fileName.toStdString(), std::ios::binary);
     if (!outFile) {
         qDebug() << "无法打开文件进行写入！"; // TODO: 改成QMessageBox
