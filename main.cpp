@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     // }
 
     MainWindow w;
-    w.setWindowTitle("五子棋 - by 黄志强 - 2024/12/10");
+    w.setWindowTitle("五子棋 - by Team 请输入文本 - 2025/6/1");
 
     QIcon icon(":/pic/icon.svg");
     w.setWindowIcon(icon);
