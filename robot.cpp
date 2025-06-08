@@ -1,5 +1,7 @@
 #include "config.h"
 #include "define.h"
+#include <iostream>
+#include <vector>
 
 #define DEBUG_LOG 1
 #if DEBUG_LOG
@@ -360,7 +362,32 @@ Coor get_action(int board_[3][15][15]) {
         auto output = module.forward({board});
         auto p = output.toTuple()->elements()[0].toTensor();
         auto v = output.toTuple()->elements()[1].toTensor().item<float>();
-        auto max_idx = p.slice(1, 0, 255).argmax(1).item<int>();
+        auto maxIdxList = std::get<1>(p.slice(1, 0, 255).sort(1, true));
+        int max_idx = 0;
+        for (int i = 0; i < maxIdxList.size(1); ++i) {
+            auto j = maxIdxList[0][i].item<int>();
+            if (board_[0][j / 15][j % 15] == 0 &&
+                board_[1][j / 15][j % 15] == 0) {
+                max_idx = j;
+                if (false) {
+                    std::cout << maxIdxList << std::endl;
+                    std::cout << j << std::endl;
+
+                    [](int pcc[3][15][15]) {
+                        for (int i = 0; i < 3; i++) {
+                            for (int j = 0; j < 15; j++) {
+                                for (int k = 0; k < 15; k++) {
+                                    std::cout << pcc[i][j][k] << ' ';
+                                }
+                                std::cout << std::endl;
+                            }
+                            std::cout << std::endl;
+                        }
+                    }(board_);
+                }
+                break;
+            }
+        }
         return {0, max_idx / 15, max_idx % 15, v};
 
     } catch (const c10::Error &e) {
@@ -389,7 +416,7 @@ coord invokeBot(int piece[16][16], coord pos, bool isPlayerFirst) {
     }
 
     for (int i = 0; i < 15; ++i) {
-        for (int j = 1; j < 15; ++j) {
+        for (int j = 0; j < 15; ++j) {
             if (piece[i + 1][j + 1] == 1) {
                 board[isPlayerFirst][i][j] = 1;
             } else if (piece[i + 1][j + 1] == 2) {

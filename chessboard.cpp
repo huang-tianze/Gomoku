@@ -15,7 +15,10 @@ ChessBoard::ChessBoard(QWidget *parent, bool _isPVE)
             pieces[i][j] = 0;
         }
     }
-    // 图标
+    {
+        // pieces['H' - 'A' + 1][15 - 8 + 1] = 1;
+
+    } // 图标
     QIcon icon(":/pic/icon.svg");
     setWindowIcon(icon);
     // 状态栏
