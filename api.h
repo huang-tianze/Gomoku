@@ -43,8 +43,8 @@ size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 std::string convert_board2string(int piece[16][16], std::pair<int, int> pos,
                                  bool Black_White) {
     std::string ret = "1 代表黑棋, 2 代表白棋\n";
-    for (int i = 1; i < 16; ++i) {
-        for (int j = 1; j < 16; ++j) {
+    for (int i = 15; i >= 1; --i) {
+        for (int j = 15; j >= 1; --j) {
             ret += std::to_string(piece[i][j]) + " ";
         }
         ret += "\n";
@@ -53,8 +53,7 @@ std::string convert_board2string(int piece[16][16], std::pair<int, int> pos,
     ret += "上一步对方落子的位置是";
     ret += [](std::pair<int, int> pos) -> std::string {
         std::string ret = "x: " + std::to_string(pos.first) +
-                          " y: " + std::to_string(pos.second) +
-                          " 索引从1开始\n";
+                          " y: " + std::to_string(pos.second);
         return ret;
     }(pos);
     return ret;
@@ -75,7 +74,7 @@ std::string call_api(std::string sys_prompt, std::string user_prompt) {
         "role": "user"
     }
 ],
-"model": "deepseek-chat",
+"model": "deepseek-re",
 "frequency_penalty": 0,
 "max_tokens": 2048,
 "presence_penalty": 0,
@@ -160,29 +159,32 @@ std::string call_deepseek(int pieces[16][16], std::pair<int, int> pos,
     switch (api_mode) {
     case API_MODE::analyze_opponent_move:
 
-        sys_prompt =
-            "你是五子棋世界冠军，请全面分析当前棋局的整体"
-            "局势，评估双方优劣势和关键控制点。你的返回的文本应该使用UTF-8编码";
-        user_prompt = "当前棋盘状态(15 * 15):\n" + boardStr + R"(
-分析要求：
-1. 分析对手这一步的战略意图和战术目的
-2. 识别对手形成的潜在威胁（活三、冲四、活四等）
-3. 评估对手的整体布局策略（如：进攻方向、控制区域）
-4. 预测对手下一步可能的进攻路线
-5. 指出对手需要特别注意的防守区域
+        sys_prompt = "你是五子棋世界冠军，请分析当前棋局的整体局势"
+                     //  ", 评估双方优劣势和关键控制点。"
+                     "你的返回的文本应该使用UTF-8编码."
+                     " 横索引从A, 纵坐标从1开始, 左下角为点(A,1)\n";
+        // "第x行第y列描述成'A'+x
+        // y,例如第四行第四列描述成D4,第9行第12列描述成I12请务必确保描述的位置正确."
+        ;
+        user_prompt = "当前棋盘状态(15 * 15):\n" + boardStr +
+                      //   R"(输出你收到的棋盘字符串,并描述当前棋子的位置)";
 
-请用以下格式回答：
-### 战略意图分析
-[内容]
-### 威胁评估
-[内容]
-### 布局策略
-[内容]
-### 下一步预测
-[内容]
-### 防守重点
-[内容]"""
-        )";
+                      R"(
+        分析要求：
+        1. 分析对手这一步的战略意图和战术目的
+        2. 识别对手形成的潜在威胁（活三、冲四、活四等）
+        3. 评估对手的整体布局策略（如：进攻方向、控制区域）
+        4. 预测对手下一步可能的进攻路线
+        5. 指出对手需要特别注意的防守区域
+
+        请用以下格式回答：
+        ### 战略意图分析
+        [内容]
+        ### 布局策略
+        [内容]
+        ###  对方防守重点
+        [内容]"""
+                )";
         break;
 
     case API_MODE::analyze_overall_situation:

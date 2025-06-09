@@ -4,6 +4,12 @@
 #include "mainwindow.h"
 #include "robot.h"
 #include "ui_chessboard.h"
+#include <QFuture>     // 管理异步任务（可选）
+#include <QMessageBox> // 弹窗提示
+#include <QMetaObject> // 跨线程调用 UI
+#include <QThread>     // 模拟耗时操作（可选）
+#include <QTimer>
+#include <QtConcurrent/qtconcurrentrun.h>
 #include <qdir.h>
 
 ChessBoard::ChessBoard(QWidget *parent, bool _isPVE)
@@ -296,11 +302,27 @@ void ChessBoard::on_backButton_clicked() {
     if (round == 1)
         return;
     if (isPVE) {
-        std::string message =
-            call_deepseek(pieces, {dropRow, dropCol}, !isPlayerFirst,
-                          API_MODE::analyze_opponent_move);
-        QMessageBox::information(this, "LLM解析",
-                                 QString::fromStdString(message));
+        // 1. 显示开始提示（主线程）
+        ui->chessRecord->append("LLM解析调用中......");
+        QCoreApplication::processEvents(); // 立即刷新UI（可选）
+
+        // 2. 启动异步任务
+        (void)QtConcurrent::run([&]() {
+            // 在子线程执行耗时操作
+            std::string message =
+                call_deepseek(pieces, {dropRow, dropCol}, !isPlayerFirst,
+                              API_MODE::analyze_opponent_move);
+
+            // 3. 回到主线程更新UI（注意Lambda捕获方式）
+            QMetaObject::invokeMethod(this, [this, message]() {
+                ui->chessRecord->append("LLM解析完成！");
+
+                // 弹窗必须在主线程调用
+                QMessageBox::information(this, "LLM解析",
+                                         QString::fromStdString(message));
+            });
+        });
+
         return;
     }
     // 由于不想增加QPixmap的存储了，只做一步悔棋.
