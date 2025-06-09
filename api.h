@@ -43,19 +43,26 @@ size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 std::string convert_board2string(int piece[16][16], std::pair<int, int> pos,
                                  bool Black_White) {
     std::string ret = "1 代表黑棋, 2 代表白棋\n";
-    for (int i = 15; i >= 1; --i) {
-        for (int j = 15; j >= 1; --j) {
+    for (int i = 1; i < 16; ++i) {
+        ret += "(" + std::to_string(16 - i) + (i > 6 ? " " : "") + ")  ";
+        for (int j = 1; j < 16; ++j) {
             ret += std::to_string(piece[i][j]) + " ";
         }
         ret += "\n";
     }
-    ret += std::string("") + (Black_White ? "你是黑棋" : "你是白棋") + "\n";
+    ret += "      ";
+    for (int i = 0; i < 15; i++) {
+        ret += std::string(1, (char)('A' + i)) + " ";
+    }
+    ret += "\n";
+    ret += std::string("") + (!Black_White ? "你是黑棋" : "你是白棋") + "\n";
     ret += "上一步对方落子的位置是";
     ret += [](std::pair<int, int> pos) -> std::string {
-        std::string ret = "x: " + std::to_string(pos.first) +
-                          " y: " + std::to_string(pos.second);
+        std::string ret = "x: " + std::string(1, ('A' + pos.second - 1)) +
+                          " y: " + std::to_string(16 - pos.first);
         return ret;
     }(pos);
+    std::cout << ret << std::endl;
     return ret;
 }
 
@@ -162,7 +169,9 @@ std::string call_deepseek(int pieces[16][16], std::pair<int, int> pos,
         sys_prompt = "你是五子棋世界冠军，请分析当前棋局的整体局势"
                      //  ", 评估双方优劣势和关键控制点。"
                      "你的返回的文本应该使用UTF-8编码."
-                     " 横索引从A, 纵坐标从1开始, 左下角为点(A,1)\n";
+                     " 棋盘横索引从A, 纵坐标从1开始, 左下角为点(A,1)\n"
+                     "棋盘的每行开头使用(y)标出这行的y坐标, "
+                     "最后一行使用大写英文字母标出这列的x坐标";
         // "第x行第y列描述成'A'+x
         // y,例如第四行第四列描述成D4,第9行第12列描述成I12请务必确保描述的位置正确."
         ;
